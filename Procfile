@@ -1,1 +1,1 @@
-web: gunicorn mps.wsgi
+web: gunicorn image1945.wsgi
