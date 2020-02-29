@@ -10,6 +10,6 @@ def index(request):
     #return HttpResponse("Hello, world. You're at the polls index.")
     userform = UserForm({'image_id':image_id})
 
-    return render(request, "get/index.html", {"form": userform,"web_link": "https://drive.google.com"})
+    return render(request, "get/index.html", {"form": userform,"web_link": BASE_DIR})
 
 # Create your views here.
