@@ -10,7 +10,8 @@ def index(request):
     #return HttpResponse("Hello, world. You're at the polls index.")
     image_id=0
     userform = UserForm({'image_id':image_id})
+    image_id = request.POST.get("image_id")
 
-    return render(request, "get/index.html", {"form": userform,"web_link": BASE_DIR})
+    return render(request, "get/index.html", {"form": userform,"web_link": image_id})
 
 # Create your views here.
