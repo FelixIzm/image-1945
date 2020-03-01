@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>Image-1945</title>
     <style>body {font-family: Arial, sans-serif;}</style>
+    <link rel="stylesheet" href="{% static '/css/input.css' %}">
 
 </head>
 <body>
@@ -20,5 +21,15 @@
     {{ web_link|safe }}
 
   </form>
+
+
+  <form class="form-style-9">
+    <ul>
+    <li>
+        <input type="text" name="field1" class="field-style field-split align-left" placeholder="id record" />
+    <input type="submit" value="Send Message" />
+    </li>
+    </ul>
+    </form>
 </body>
 </html>
