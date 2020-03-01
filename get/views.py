@@ -12,6 +12,6 @@ def index(request):
     userform = UserForm({'image_id':image_id})
     image_id = request.POST.get("image_id")
 
-    return render(request, "get/index.html", {"form": userform,"web_link": image_id})
+    return render(request, "get/index.html", {"form": userform,"web_link": BASE_DIR})
 
 # Create your views here.
