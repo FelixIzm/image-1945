@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Memory-1945</title>
+    <title>Image-1945</title>
     <style>body {font-family: Arial, sans-serif;}</style>
 
 </head>
@@ -12,9 +12,11 @@
     <form method="POST">
         {% csrf_token %}
     <table>
-        {{ form }}
+      <tr>
+        <td>{{ form }}</td><td><input type="submit" value="Send" name="SendRequest"><br/><br/></td>
+        </tr>
     </table>
-    <input type="submit" value="Send" name="SendRequest">&nbsp;<input type="submit" value="Save" name="SaveData"><br/><br/>
+
     {{ web_link|safe }}
 
   </form>
