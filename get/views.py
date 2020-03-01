@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from .forms import UserForm
-import os
+import os, tempfile
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -11,7 +11,7 @@ def index(request):
     image_id=0
     userform = UserForm({'image_id':image_id})
     image_id = request.POST.get("image_id")
-
-    return render(request, "get/index.html", {"form": userform,"web_link": BASE_DIR})
+    dirpath = tempfile.mkdtemp()
+    return render(request, "get/index.html", {"form": userform,"web_link": dirpath})
 
 # Create your views here.
