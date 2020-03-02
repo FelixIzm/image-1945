@@ -1,5 +1,5 @@
 import sys
-sys.path.append('..')
+sys.path.append('../get')
 import tests
 from django.shortcuts import render
 from django.http import HttpResponse
