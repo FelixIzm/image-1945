@@ -16,7 +16,7 @@ def index(request):
 
     dirpath = tempfile.TemporaryDirectory(dir='/app/get/')
 
-    open(os.path.join(dirpath, 'facebook.ico'), 'wb').write(r.content)
+    #open(os.path.join(dirpath, 'facebook.ico'), 'wb').write(r.content)
     return render(request, "get/index.html", {"form": userform,"web_link": dirpath})
 
 # Create your views here.
