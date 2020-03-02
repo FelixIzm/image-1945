@@ -15,7 +15,9 @@ def index(request):
     r = requests.get(url, allow_redirects=True)
 
     dirpath = tempfile.mkdtemp(dir='/app/get/')
-    time.sleep(5)
+    time.sleep(15)
+    print('**************************')
+    print(dirpath)
 
     #open(os.path.join(dirpath, 'facebook.ico'), 'wb').write(r.content)
     return render(request, "get/index.html", {"form": userform,"web_link": dirpath})
