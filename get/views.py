@@ -1,4 +1,6 @@
-from tests import *
+import sys
+sys.path.append('..')
+import tests
 from django.shortcuts import render
 from django.http import HttpResponse
 from .forms import UserForm
