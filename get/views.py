@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from .forms import UserForm
-import os, tempfile, requests
+import os, tempfile, requests, time
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -14,7 +14,8 @@ def index(request):
     url = 'https://www.facebook.com/favicon.ico'
     r = requests.get(url, allow_redirects=True)
 
-    dirpath = tempfile.TemporaryDirectory(dir='/app/get/')
+    dirpath = tempfile.mkdtemp(dir='/app/get/')
+    time.sleep(5)
 
     #open(os.path.join(dirpath, 'facebook.ico'), 'wb').write(r.content)
     return render(request, "get/index.html", {"form": userform,"web_link": dirpath})
