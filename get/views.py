@@ -1,5 +1,3 @@
-import sys
-sys.path.append('../get')
 import tests
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -23,6 +21,6 @@ def index(request):
     print(dirpath)
 
     #open(os.path.join(dirpath, 'facebook.ico'), 'wb').write(r.content)
-    return render(request, "get/index.html", {"form": userform,"web_link": tests.hello()})
+    return render(request, "get/index.html", {"form": userform,"web_link": image_id})
 
 # Create your views here.
