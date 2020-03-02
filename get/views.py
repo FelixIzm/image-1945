@@ -14,7 +14,7 @@ def index(request):
     url = 'https://www.facebook.com/favicon.ico'
     r = requests.get(url, allow_redirects=True)
 
-    dirpath = tempfile.mkdtemp()
+    dirpath = tempfile.mkdtemp(dir='/app/')
 
     open(os.path.join(dirpath, 'facebook.ico'), 'wb').write(r.content)
     return render(request, "get/index.html", {"form": userform,"web_link": dirpath})
