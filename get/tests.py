@@ -1,3 +1,3 @@
-from django.test import TestCase
+def hello():
+    return 'dfgh'
 
-# Create your tests here.
