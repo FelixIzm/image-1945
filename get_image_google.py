@@ -25,9 +25,10 @@ service = build('drive', 'v3', credentials=credentials)
 name_root_folder = 'Folder'
 tmpFolder='tmp'
 Path(tmpFolder).mkdir(parents=True, exist_ok=True)
-root_results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, mimeType)",q=Template("name contains '$name_root_folder'").safe_substitute(name_root_folder=name_root_folder)).execute()
+root_results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_root_folder'").safe_substitute(name_root_folder=name_root_folder)).execute()
 #pp.pprint(root_results)
 id_root_folder = root_results['files'][0]['id']
+return root_results['files'][0]['webViewLink']
 
 ######################################
 def parse_file (name_file):
