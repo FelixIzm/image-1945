@@ -73,7 +73,7 @@ def get_info(id_scan,id,cookies):
 #            MAIN!!!!!!!!!!         #
 #####################################
 def main(image_id,image,excel):
-    if(image_id==0):
+    if(image_id==None):
         return 'webViewLink'
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
     img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
