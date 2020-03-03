@@ -5,8 +5,6 @@ from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload,MediaFileUpload
 from googleapiclient.discovery import build
 from string import Template
-import pprint
-import io
 from pathlib import Path
 import tempfile
 
@@ -17,18 +15,17 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 cols = ['ID scan','ID','Фамилия','Имя','Отчество','Дата рождения/Возраст','Место рождения','Дата и место призыва','Последнее место службы','Воинское звание','Судьба','Дата смерти','Первичное место захоронения']
 
-pp = pprint.PrettyPrinter(indent=4)
 SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = 'obd.json'
 credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 service = build('drive', 'v3', credentials=credentials)
 name_root_folder = 'Folder'
-tmpFolder='tmp'
-Path(tmpFolder).mkdir(parents=True, exist_ok=True)
+
 root_results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_root_folder'").safe_substitute(name_root_folder=name_root_folder)).execute()
-#pp.pprint(root_results)
 id_root_folder = root_results['files'][0]['id']
-return root_results['files'][0]['webViewLink']
+def mmm():
+    global root_results
+    return root_results['files'][0]['webViewLink']
 
 ######################################
 def parse_file (name_file):
