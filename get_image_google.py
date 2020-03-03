@@ -8,6 +8,7 @@ from string import Template
 import pprint
 import io
 from pathlib import Path
+import tempfile
 
 #from lxml.html import parse, fromstring
 from openpyxl import Workbook
