@@ -1,8 +1,8 @@
-import tests
 from django.shortcuts import render
 from django.http import HttpResponse
 from .forms import UserForm
 import os, tempfile, requests, time
+import get_image_google
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
