@@ -26,6 +26,9 @@ pp = pprint.PrettyPrinter(indent=4)
 
 root_results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_root_folder'").safe_substitute(name_root_folder=name_root_folder)).execute()
 id_root_folder = root_results['files'][0]['id']
+print('********** root ***************')
+pp.pprint(root_results)
+print('********** root ***************')
 def mmm():
     global root_results
     return root_results['files'][0]['webViewLink']
@@ -161,6 +164,7 @@ def main(image_id,image,excel):
         }
         result = service.files().create(body=file_metadata, fields='id').execute()
     print('******************')
+    pp.pprint(result)
     print('web_link = '+result['files'][0]['webViewLink'])
     print('name     = '+result['files'][0]['name'])
     print('******************')
