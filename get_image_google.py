@@ -175,31 +175,15 @@ def main(image_id,image,excel):
     for file in list_files['files']:
         control_list_file.append(file['name'])
     ################################################################################
-    #return
     for _file in list_files:
         name = os.path.basename(_file)
         print(_file)
 
-'''
+        '''
         if(name not in control_list_file):
             print(name)
             file_metadata = {'name': name,'parents': [id_folder_save]}
             media = MediaFileUpload(_file, resumable=True)
             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-'''
-#            if(r['id']):
-#                media = None
-#                os.remove(_file)
+        '''
     return web_link
-'''
-_id = 51480906
-d = {'image':True, 'excel':False}
-list_file = main(_id,**d)
-
-for name in list_file:
-    name = os.path.basename(name)
-    print(name)
-
-link = save_to_folder(str(_id),list_file)
-print(link)
-'''
