@@ -147,7 +147,7 @@ def main(image_id,image,excel):
 #        workbook.save(filename = 'sample_book.xlsx')
 
     name_folder_save = str(image_id)
-    result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
+    result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink,parents)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
     print('******************')
     pp.pprint(result)
     print('******************')
