@@ -18,8 +18,8 @@ def index(request):
 
     image_id = 51480906
     d = {'image':True, 'excel':False}
-    list_file = get_image_google.main(image_id,**d)
-    link = get_image_google.save_to_folder(str(image_id),list_file)
+    link = get_image_google.main(image_id,**d)
+    #link = get_image_google.save_to_folder(str(image_id),list_file)
     # отладка
     #link = get_image_google.mmm()
 
