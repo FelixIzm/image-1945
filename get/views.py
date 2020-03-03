@@ -156,65 +156,53 @@ def main(image_id,image,excel):
 #        workbook.save(filename = 'sample_book.xlsx')
 
     name_folder_save = str(image_id)
-    result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink,parents)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
-    print('******************')
+    #create catalog
+    file_metadata = {
+        'name': name_folder_save+"_"+os.path.basename(tempfile.mktemp ()),
+        'mimeType': 'application/vnd.google-apps.folder',
+        'parents': [id_root_folder]
+    }
+    result = service.files().create(body=file_metadata, fields='id,webViewLink').execute()
+    print('****** create 1 ********')
     pp.pprint(result)
-    print('******************')
-    
-    if(not result['files']):
-        #create catalog
-        file_metadata = {
-            'name': name_folder_save,
-            'mimeType': 'application/vnd.google-apps.folder',
-            'parents': [id_root_folder]
-        }
-        result = service.files().create(body=file_metadata, fields='id').execute()
-        print('****** create 1 *********')
-        pp.pprint(result)
-        print('****** create 2 *********')
-    print('******************')
-    pp.pprint(result)
-    print('web_link = '+result['files'][0]['webViewLink'])
-    print('name     = '+result['files'][0]['name'])
-    print('******************')
+    print('****** create 2 ********')
     # id каталога для сохранения
-    id_folder_save = result['files'][0]['id']
+    id_folder_save = result['id']
     # ссылка на каталог
-    web_link = result['files'][0]['webViewLink']
+    web_link = result['webViewLink']
 
     # получим список файлов в каталоге GoogleDrive, что бы не делать лишней работы
-    list_files = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType, parents)",q=Template("'$id_parents_folder' in parents").safe_substitute(id_parents_folder=id_folder_save)).execute()
-    control_list_file = []
-    for file in list_files['files']:
-        control_list_file.append(file['name'])
+    #list_files = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType, parents)",q=Template("'$id_parents_folder' in parents").safe_substitute(id_parents_folder=id_folder_save)).execute()
+    #list_files = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType, parents)",q=("'1C5tOqtnfjGRy7SKsNOcPlTUXx_euZwXG' in parents")).execute()
+    
+    #print('****** list 1 ********')
+    #pp.pprint(list_files)
+    #print('****** list 2 ********')
+
+    #control_list_file = []
+    #for file in list_files['files']:
+    #    control_list_file.append(file['name'])
     ################################################################################
-    for _file in list_files:
+    for _file in list_file:
         name = os.path.basename(_file)
         print(_file)
-
-        '''
-        if(name not in control_list_file):
-            print(name)
-            file_metadata = {'name': name,'parents': [id_folder_save]}
-            media = MediaFileUpload(_file, resumable=True)
-            r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-        '''
+        file_metadata = {'name': name,'parents': [id_folder_save]}
+        media = MediaFileUpload(_file, resumable=True)
+        r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        
     return web_link
 
 ##########################################
 def index(request):
     #return HttpResponse("Hello, world. You're at the polls index.")
+    image_id=''
     userform = UserForm({'image_id':image_id})
     image_id = request.POST.get("image_id")
-    url = 'https://www.facebook.com/favicon.ico'
-    r = requests.get(url, allow_redirects=True)
-
 
     #image_id = 85942988 #51480906
     link = ''
     d = {'image':True, 'excel':False}
-    return render(request, "get/index.html", {"form": userform,"web_link": image_id})
-    #link = main(image_id,**d)
-    #return render(request, "get/index.html", {"form": userform,"web_link": link})
+    link = main(image_id,**d)
+    return render(request, "get/index.html", {"form": userform,"web_link": link})
 
 # Create your views here.
