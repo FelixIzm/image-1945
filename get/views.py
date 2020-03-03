@@ -15,9 +15,6 @@ def index(request):
     url = 'https://www.facebook.com/favicon.ico'
     r = requests.get(url, allow_redirects=True)
 
-    dirpath = tempfile.mkdtemp(dir='/app/get/')
-    print('**************************')
-    print(dirpath)
 
     image_id = 51480906
     d = {'image':True, 'excel':False}

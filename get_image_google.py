@@ -70,11 +70,13 @@ def get_info(id_scan,id,cookies):
     list_col[0] = id_scan
     return list_col
 #####################################
-
-def main(id,image,excel):
-    info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(id)
-    img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(id)
+#            MAIN!!!!!!!!!!         #
+#####################################
+def main(image_id,image,excel):
+    info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
+    img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
     res1 = requests.get(info_url,allow_redirects = True)
+    dirpath = tempfile.mkdtemp()
     if(res1.status_code==307):
         print(res1.status_code)
         print('*****************')
@@ -82,10 +84,12 @@ def main(id,image,excel):
         cookies = {}
         cookies['3fbe47cd30daea60fc16041479413da2']=res1.cookies['3fbe47cd30daea60fc16041479413da2']
         cookies['JSESSIONID']=res1.cookies['JSESSIONID']
-
+        #############################
+        #   load list id's images   #
+        #############################
         response = requests.get(img_info)
         response_dict = json.loads(response.text)
-        #print(response_dict[0]['mapData'].keys()[0])
+        #############################
         i=0
         if(excel):
             row_num = 1
@@ -102,8 +106,7 @@ def main(id,image,excel):
         list_file = []
         for item in response_dict:
             i+=1
-            print(i, item['id'])
-
+            #print(i, item['id'])
             if(excel):
                 for id in item['mapData'].keys():
                     row_num += 1
@@ -112,8 +115,6 @@ def main(id,image,excel):
                     for col_num, cell_value in enumerate(row, 1):
                         cell = worksheet.cell(row=row_num, column=col_num)
                         cell.value = cell_value
-
-
             if(image):
                 img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
                 headers_302 = parse_file(BASE_DIR+'/header_302.txt')
@@ -131,22 +132,28 @@ def main(id,image,excel):
                     req_img = requests.get("https://cdn.obd-memorial.ru/html/images3",headers=headers_img,params=params,stream = True,allow_redirects = False )
                     #####################
                     if(req_img.status_code==200):
-                        location = os.path.abspath("./scan/"+str(item['id'])+'.jpg')
+                        location = os.path.abspath(dirpath+"/"+str(item['id'])+'.jpg')
                         f = open(location, 'wb')
                         f.write(req_img.content)
                         f.close()
-                        list_file.append("./scan/"+str(item['id'])+'.jpg')
+                        list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
     if(excel):
         workbook.save(filename = 'sample_book.xlsx')
-    return list_file
+
+
+
+
+
+    #return list_file
 
 #####################################
 # def main() end
 #####################################
 
 
-def save_to_folder(name_folder_save, list_files_upload):
-    result = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
+#def save_to_folder(name_folder_save, list_files_upload):
+    name_folder_save = str(image_id)
+    result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
     if(not result['files']):
         #create catalog
         file_metadata = {
@@ -167,7 +174,7 @@ def save_to_folder(name_folder_save, list_files_upload):
         control_list_file.append(file['name'])
     ################################################################################
     #return
-    for _file in list_files_upload:
+    for _file in list_files:
         name = os.path.basename(_file)
 
         if(name not in control_list_file):
@@ -175,9 +182,9 @@ def save_to_folder(name_folder_save, list_files_upload):
             file_metadata = {'name': name,'parents': [id_folder_save]}
             media = MediaFileUpload(_file, resumable=True)
             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-            if(r['id']):
-                media = None
-                os.remove(_file)
+#            if(r['id']):
+#                media = None
+#                os.remove(_file)
     return web_link
 '''
 _id = 51480906
