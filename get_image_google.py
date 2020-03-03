@@ -1,7 +1,7 @@
 import requests, json, re, os
 import hashlib
 import lxml.html as html
-from oauth2 import service_account
+from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload,MediaFileUpload
 from googleapiclient.discovery import build
 from string import Template
