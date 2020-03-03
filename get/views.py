@@ -17,6 +17,7 @@ def index(request):
 
 
     image_id = 51480906
+    link = ''
     d = {'image':True, 'excel':False}
     if __name__ == "__main__":
         link = get_image_google.main(image_id,**d)
@@ -25,6 +26,6 @@ def index(request):
         #link = get_image_google.mmm()
 
         #open(os.path.join(dirpath, 'facebook.ico'), 'wb').write(r.content)
-        return render(request, "get/index.html", {"form": userform,"web_link": link})
+    return render(request, "get/index.html", {"form": userform,"web_link": link})
 
 # Create your views here.
