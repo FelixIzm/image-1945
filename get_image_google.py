@@ -72,107 +72,107 @@ def get_info(id_scan,id,cookies):
 #####################################
 #            MAIN!!!!!!!!!!         #
 #####################################
-if __name__ == "__main__":
-    def main(image_id,image,excel):
-        if(image_id==None):
-            return 'webViewLink'
-        info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
-        img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
-        res1 = requests.get(info_url,allow_redirects = True)
-        dirpath = tempfile.mkdtemp()
-        if(res1.status_code==307):
-            print(res1.status_code)
-            print('*****************')
 
-            cookies = {}
-            cookies['3fbe47cd30daea60fc16041479413da2']=res1.cookies['3fbe47cd30daea60fc16041479413da2']
-            cookies['JSESSIONID']=res1.cookies['JSESSIONID']
-            #############################
-            #   load list id's images   #
-            #############################
-            response = requests.get(img_info)
-            response_dict = json.loads(response.text)
-            #############################
-            i=0
+def main(image_id,image,excel):
+    if(image_id==None):
+        return 'webViewLink'
+    info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
+    img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
+    res1 = requests.get(info_url,allow_redirects = True)
+    dirpath = tempfile.mkdtemp()
+    if(res1.status_code==307):
+        print(res1.status_code)
+        print('*****************')
+
+        cookies = {}
+        cookies['3fbe47cd30daea60fc16041479413da2']=res1.cookies['3fbe47cd30daea60fc16041479413da2']
+        cookies['JSESSIONID']=res1.cookies['JSESSIONID']
+        #############################
+        #   load list id's images   #
+        #############################
+        response = requests.get(img_info)
+        response_dict = json.loads(response.text)
+        #############################
+        i=0
+        if(excel):
+            row_num = 1
+            workbook = Workbook()
+            # Get active worksheet/tab
+            worksheet = workbook.active
+            worksheet.title = 'Person'
+            columns = cols
+            for col_num, column_title in enumerate(columns, 1):
+                cell = worksheet.cell(row=row_num, column=col_num)
+                cell.value = column_title
+        # идем по списку id сканов
+        # сохраняем имена файлов [id].jpg в list, потом его вернем для выгрузки Google Drive
+        list_file = []
+        for item in response_dict:
+            i+=1
+            #print(i, item['id'])
             if(excel):
-                row_num = 1
-                workbook = Workbook()
-                # Get active worksheet/tab
-                worksheet = workbook.active
-                worksheet.title = 'Person'
-                columns = cols
-                for col_num, column_title in enumerate(columns, 1):
-                    cell = worksheet.cell(row=row_num, column=col_num)
-                    cell.value = column_title
-            # идем по списку id сканов
-            # сохраняем имена файлов [id].jpg в list, потом его вернем для выгрузки Google Drive
-            list_file = []
-            for item in response_dict:
-                i+=1
-                #print(i, item['id'])
-                if(excel):
-                    for id in item['mapData'].keys():
-                        row_num += 1
-                        row = get_info(item['id'],id,cookies)
-                        #print('\t',id)
-                        for col_num, cell_value in enumerate(row, 1):
-                            cell = worksheet.cell(row=row_num, column=col_num)
-                            cell.value = cell_value
-                if(image):
-                    img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
-                    headers_302 = parse_file(BASE_DIR+'/header_302.txt')
-                    headers_302['Cookie'] = make_str_cookie(cookies)
-                    headers_302['Referer'] = info_url
-                    req302 = requests.get(img_url,headers=headers_302,cookies=cookies, allow_redirects = False)
-                    if(req302.status_code==302):
-                        params = {}
-                        params['id'] = str(item['id'])
-                        params['id1'] = getStringHash(item['id'])
-                        params['path'] = item['img']
-                        headers_img = parse_file(BASE_DIR+'/header_img.txt')
-                        headers_img['Referer'] = info_url
-                        #####################
-                        req_img = requests.get("https://cdn.obd-memorial.ru/html/images3",headers=headers_img,params=params,stream = True,allow_redirects = False )
-                        #####################
-                        if(req_img.status_code==200):
-                            location = os.path.abspath(dirpath+"/"+str(item['id'])+'.jpg')
-                            f = open(location, 'wb')
-                            f.write(req_img.content)
-                            f.close()
-                            list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
-    #    if(excel):
-    #        workbook.save(filename = 'sample_book.xlsx')
+                for id in item['mapData'].keys():
+                    row_num += 1
+                    row = get_info(item['id'],id,cookies)
+                    #print('\t',id)
+                    for col_num, cell_value in enumerate(row, 1):
+                        cell = worksheet.cell(row=row_num, column=col_num)
+                        cell.value = cell_value
+            if(image):
+                img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
+                headers_302 = parse_file(BASE_DIR+'/header_302.txt')
+                headers_302['Cookie'] = make_str_cookie(cookies)
+                headers_302['Referer'] = info_url
+                req302 = requests.get(img_url,headers=headers_302,cookies=cookies, allow_redirects = False)
+                if(req302.status_code==302):
+                    params = {}
+                    params['id'] = str(item['id'])
+                    params['id1'] = getStringHash(item['id'])
+                    params['path'] = item['img']
+                    headers_img = parse_file(BASE_DIR+'/header_img.txt')
+                    headers_img['Referer'] = info_url
+                    #####################
+                    req_img = requests.get("https://cdn.obd-memorial.ru/html/images3",headers=headers_img,params=params,stream = True,allow_redirects = False )
+                    #####################
+                    if(req_img.status_code==200):
+                        location = os.path.abspath(dirpath+"/"+str(item['id'])+'.jpg')
+                        f = open(location, 'wb')
+                        f.write(req_img.content)
+                        f.close()
+                        list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
+#    if(excel):
+#        workbook.save(filename = 'sample_book.xlsx')
 
-        name_folder_save = str(image_id)
-        result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
-        if(not result['files']):
-            #create catalog
-            file_metadata = {
-                'name': name_folder_save,
-                'mimeType': 'application/vnd.google-apps.folder',
-                'parents': [id_root_folder]
-            }
-            result = service.files().create(body=file_metadata, fields='id').execute()
-        # id каталога для сохранения
-        id_folder_save = result['files'][0]['id']
-        # ссылка на каталог
-        web_link = result['files'][0]['webViewLink']
+    name_folder_save = str(image_id)
+    result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
+    if(not result['files']):
+        #create catalog
+        file_metadata = {
+            'name': name_folder_save,
+            'mimeType': 'application/vnd.google-apps.folder',
+            'parents': [id_root_folder]
+        }
+        result = service.files().create(body=file_metadata, fields='id').execute()
+    # id каталога для сохранения
+    id_folder_save = result['files'][0]['id']
+    # ссылка на каталог
+    web_link = result['files'][0]['webViewLink']
 
-        # получим список файлов в каталоге GoogleDrive, что бы не делать лишней работы
-        list_files = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType, parents)",q=Template("'$id_parents_folder' in parents").safe_substitute(id_parents_folder=id_folder_save)).execute()
-        control_list_file = []
-        for file in list_files['files']:
-            control_list_file.append(file['name'])
-        ################################################################################
-        for _file in list_files:
-            name = os.path.basename(_file)
-            print(_file)
+    # получим список файлов в каталоге GoogleDrive, что бы не делать лишней работы
+    list_files = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType, parents)",q=Template("'$id_parents_folder' in parents").safe_substitute(id_parents_folder=id_folder_save)).execute()
+    control_list_file = []
+    for file in list_files['files']:
+        control_list_file.append(file['name'])
+    ################################################################################
+    for _file in list_files:
+        name = os.path.basename(_file)
+        print(_file)
 
-            '''
-            if(name not in control_list_file):
-                print(name)
-                file_metadata = {'name': name,'parents': [id_folder_save]}
-                media = MediaFileUpload(_file, resumable=True)
-                r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-            '''
-        return web_link
+        '''
+        if(name not in control_list_file):
+            print(name)
+            file_metadata = {'name': name,'parents': [id_folder_save]}
+            media = MediaFileUpload(_file, resumable=True)
+            r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        '''
+    return web_link
