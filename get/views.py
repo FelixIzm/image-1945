@@ -24,7 +24,7 @@ cols = ['ID scan','ID','Фамилия','Имя','Отчество','Дата р
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = 'obd.json'
-credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+credentials = service_account.Credentials.from_service_account_file(os.path.join(BASE_DIR, SERVICE_ACCOUNT_FILE), scopes=SCOPES)
 service = build('drive', 'v3', credentials=credentials)
 name_root_folder = 'Folder'
 
