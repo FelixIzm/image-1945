@@ -7,6 +7,7 @@ from googleapiclient.discovery import build
 from string import Template
 from pathlib import Path
 import tempfile
+import pprint
 
 #from lxml.html import parse, fromstring
 from openpyxl import Workbook
@@ -20,6 +21,8 @@ SERVICE_ACCOUNT_FILE = 'obd.json'
 credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 service = build('drive', 'v3', credentials=credentials)
 name_root_folder = 'Folder'
+
+pp = pprint.PrettyPrinter(indent=4)
 
 root_results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_root_folder'").safe_substitute(name_root_folder=name_root_folder)).execute()
 id_root_folder = root_results['files'][0]['id']
@@ -145,6 +148,9 @@ def main(image_id,image,excel):
 
     name_folder_save = str(image_id)
     result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
+    print('******************')
+    pp.pprint(result)
+    print('******************')
     
     if(not result['files']):
         #create catalog
