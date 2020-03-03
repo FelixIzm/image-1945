@@ -145,6 +145,7 @@ def main(image_id,image,excel):
 
     name_folder_save = str(image_id)
     result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
+    
     if(not result['files']):
         #create catalog
         file_metadata = {
@@ -153,9 +154,10 @@ def main(image_id,image,excel):
             'parents': [id_root_folder]
         }
         result = service.files().create(body=file_metadata, fields='id').execute()
-        print('******************')
-        print('web_link = '+result['files'][0]['webViewLink'])
-        print('******************')
+    print('******************')
+    print('web_link = '+result['files'][0]['webViewLink'])
+    print('name     = '+result['files'][0]['name'])
+    print('******************')
     # id каталога для сохранения
     id_folder_save = result['files'][0]['id']
     # ссылка на каталог
