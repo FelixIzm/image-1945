@@ -68,13 +68,10 @@ def get_info(id_scan,id,cookies):
     list_col[1] = id
     list_col[0] = id_scan
     return list_col
-
 #####################################
 #            MAIN!!!!!!!!!!         #
 #####################################
 def main(image_id,image,excel):
-    if(image_id==0):
-        return 'webViewLink'
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
     img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
     res1 = requests.get(info_url,allow_redirects = True)
@@ -139,8 +136,8 @@ def main(image_id,image,excel):
                         f.write(req_img.content)
                         f.close()
                         list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
-#    if(excel):
-#        workbook.save(filename = 'sample_book.xlsx')
+    if(excel):
+        workbook.save(filename = 'sample_book.xlsx')
 
 
 
@@ -184,7 +181,6 @@ def main(image_id,image,excel):
             file_metadata = {'name': name,'parents': [id_folder_save]}
             media = MediaFileUpload(_file, resumable=True)
             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-
 #            if(r['id']):
 #                media = None
 #                os.remove(_file)
