@@ -153,6 +153,9 @@ def main(image_id,image,excel):
             'parents': [id_root_folder]
         }
         result = service.files().create(body=file_metadata, fields='id').execute()
+        print('******************')
+        print('web_link = '+result['files'][0]['webViewLink'])
+        print('******************')
     # id каталога для сохранения
     id_folder_save = result['files'][0]['id']
     # ссылка на каталог
