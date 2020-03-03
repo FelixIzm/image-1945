@@ -178,13 +178,15 @@ def main(image_id,image,excel):
     #return
     for _file in list_files:
         name = os.path.basename(_file)
+        print(_file)
 
+'''
         if(name not in control_list_file):
             print(name)
             file_metadata = {'name': name,'parents': [id_folder_save]}
             media = MediaFileUpload(_file, resumable=True)
             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-
+'''
 #            if(r['id']):
 #                media = None
 #                os.remove(_file)
