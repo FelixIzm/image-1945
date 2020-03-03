@@ -204,22 +204,17 @@ def main(image_id,image,excel):
 ##########################################
 def index(request):
     #return HttpResponse("Hello, world. You're at the polls index.")
-    image_id=0
     userform = UserForm({'image_id':image_id})
     image_id = request.POST.get("image_id")
     url = 'https://www.facebook.com/favicon.ico'
     r = requests.get(url, allow_redirects=True)
 
 
-    image_id = 85942988 #51480906
+    #image_id = 85942988 #51480906
     link = ''
     d = {'image':True, 'excel':False}
-    link = main(image_id,**d)
-        #link = get_image_google.save_to_folder(str(image_id),list_file)
-        # отладка
-        #link = get_image_google.mmm()
-
-        #open(os.path.join(dirpath, 'facebook.ico'), 'wb').write(r.content)
-    return render(request, "get/index.html", {"form": userform,"web_link": link})
+    return render(request, "get/index.html", {"form": userform,"web_link": image_id})
+    #link = main(image_id,**d)
+    #return render(request, "get/index.html", {"form": userform,"web_link": link})
 
 # Create your views here.
