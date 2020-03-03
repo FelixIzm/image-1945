@@ -162,11 +162,10 @@ def main(image_id,image,excel):
             'mimeType': 'application/vnd.google-apps.folder',
             'parents': [id_root_folder]
         }
-        result = service.files().create(body=file_metadata, fields='files(id, name, mimeType,webViewLink,parents)').execute()
+        result = service.files().create(body=file_metadata, fields='id').execute()
         print('****** create 1 *********')
         pp.pprint(result)
         print('****** create 2 *********')
-        
     print('******************')
     pp.pprint(result)
     print('web_link = '+result['files'][0]['webViewLink'])
