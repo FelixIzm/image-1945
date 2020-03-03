@@ -22,7 +22,7 @@ def index(request):
     #_id = 51480906
     d = {'image':True, 'excel':False}
     list_file = get_image_google.main(image_id,**d)
-    link = get_image_google.save_to_folder(str(_id),list_file)
+    link = get_image_google.save_to_folder(str(image_id),list_file)
 
     #open(os.path.join(dirpath, 'facebook.ico'), 'wb').write(r.content)
     return render(request, "get/index.html", {"form": userform,"web_link": link})
