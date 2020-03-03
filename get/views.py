@@ -19,11 +19,7 @@ def index(request):
     image_id = 51480906
     link = ''
     d = {'image':True, 'excel':False}
-    if __name__ == "__main__":
-        link = get_image_google.main(image_id,**d)
-        print('*****************************')
-        print('image_id = '+str(image_id))
-        print('*****************************')
+    link = get_image_google.main(image_id,**d)
         #link = get_image_google.save_to_folder(str(image_id),list_file)
         # отладка
         #link = get_image_google.mmm()
