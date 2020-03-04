@@ -186,8 +186,18 @@ def main(image_id,image,excel):
                         print(name)
                         file_metadata = {'name': name,'parents': [id_folder_save]}
                         media = MediaFileUpload(dirpath+"/"+str(item['id'])+'.jpg', resumable=True,chunksize=-1, mimetype = 'image/jpg')
-                        r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-
+                        try:
+                            r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+                        except service.errors.HttpError as e:
+                            if e.resp.status in [404]:
+                                # Start the upload all over again.
+                                print("ERROR404 ********")
+                            elif e.resp.status in [500, 502, 503, 504]:
+                                print("ERROR 50* ********")
+                                # Call next_chunk() again, but use an exponential backoff for repeated errors.
+                            else:
+                                print('OK')
+                            # Do not retry. Log the error and fail.
 
                         if(excel):
                             workbook.save(filename = (str(image_id)+'_book.xlsx'))
