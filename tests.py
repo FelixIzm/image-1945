@@ -1,3 +1,3 @@
-def hello():
-    return 'test - 1945'
+from datetime import datetime
 
+print(datetime.now().strftime('%Y-%m-%d:%H_%M_%S'))

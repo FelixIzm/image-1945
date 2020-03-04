@@ -15,6 +15,7 @@ from pathlib import Path
 import tempfile
 import pprint
 from openpyxl import Workbook
+from datetime import datetime
 
 image_id =''
 ##########################################
@@ -89,7 +90,8 @@ def main(image_id,image,excel):
     dirpath = tempfile.mkdtemp()
     print('dirpath = '+dirpath)
     # создаем каталог сразу - один раз
-    name_folder_save = str(image_id)+"_"+os.path.basename(tempfile.mktemp ())
+    #name_folder_save = str(image_id)+"_"+os.path.basename(tempfile.mktemp ())
+    name_folder_save = str(image_id)+datetime.now().strftime('%Y-%m-%d:%H_%M_%S')
     print('name_folder_save = '+name_folder_save)
     #create catalog
     file_metadata = {
