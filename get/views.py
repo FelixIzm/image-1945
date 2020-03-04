@@ -190,7 +190,7 @@ def main(image_id,image,excel):
             name = os.path.basename(_file)
             print(_file)
             file_metadata = {'name': name,'parents': [id_folder_save]}
-            media = MediaFileUpload(_file, resumable=True,chunksize=-1)
+            media = MediaFileUpload(_file, resumable=True,chunksize=-1, mimetype = 'image/jpg')
             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
         # Определяем - записались ли файлы в каталог
         result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
