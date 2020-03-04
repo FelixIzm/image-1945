@@ -119,7 +119,7 @@ def main(image_id,image,excel):
         print('*****************')
         if(not '3fbe47cd30daea60fc16041479413da2' in res1.cookies):
             # Удаляем каталог за ненадобностью
-            result = service.files().delete(body=file_metadata).execute()
+            result = service.files().delete(fileId=id_folder_save).execute()
             print('*****************************************')
             print(' delete catalog = '+name_folder_save)
             pp.pprint(result)
