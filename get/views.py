@@ -190,7 +190,8 @@ def main(image_id,image,excel):
                         try:
                             media = MediaFileUpload(dirpath+"/"+str(item['id'])+'.jpg', resumable=True,chunksize=-1, mimetype = 'image/jpg')
                             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-                        except HttpError as e:
+                        except HttpError, e:
+                            print(e)
                             if e.resp.status in [404]:
                                 # Start the upload all over again.
                                 print("ERROR404 ********")
