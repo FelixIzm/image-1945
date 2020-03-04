@@ -110,8 +110,8 @@ def main(image_id,image,excel):
     if(res1.status_code==307):
         print(res1.status_code)
         print('*****************')
-        if(not res1.cookies['3fbe47cd30daea60fc16041479413da2']):
-            return 'Запись свобдного документа не найдена'
+        if(not '3fbe47cd30daea60fc16041479413da2' in res1.cookies):
+            return 'Запись сводного документа не найдена'
         cookies = {}
         cookies['3fbe47cd30daea60fc16041479413da2']=res1.cookies['3fbe47cd30daea60fc16041479413da2']
         cookies['JSESSIONID']=res1.cookies['JSESSIONID']
