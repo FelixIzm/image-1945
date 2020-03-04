@@ -10,6 +10,8 @@ import lxml.html as html
 from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload,MediaFileUpload
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
 from string import Template
 from pathlib import Path
 import tempfile
@@ -188,7 +190,7 @@ def main(image_id,image,excel):
                         try:
                             media = MediaFileUpload(dirpath+"/"+str(item['id'])+'.jpg', resumable=True,chunksize=-1, mimetype = 'image/jpg')
                             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-                        except MediaFileUpload.errors.HttpError as e:
+                        except HttpError as e:
                             if e.resp.status in [404]:
                                 # Start the upload all over again.
                                 print("ERROR404 ********")
