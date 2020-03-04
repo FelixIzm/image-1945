@@ -186,7 +186,7 @@ def main(image_id,image,excel):
                         print(name)
                         file_metadata = {'name': name,'parents': [id_folder_save]}
                         media = MediaFileUpload(dirpath+"/"+str(item['id'])+'.jpg', resumable=True,chunksize=-1, mimetype = 'image/jpg')
-                        r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+                        r = service.files().insert(body=file_metadata, media_body=media, fields='id').execute()
 
 
                         if(excel):
