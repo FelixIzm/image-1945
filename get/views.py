@@ -118,6 +118,11 @@ def main(image_id,image,excel):
         print(res1.status_code)
         print('*****************')
         if(not '3fbe47cd30daea60fc16041479413da2' in res1.cookies):
+            # Удаляем каталог за ненадобностью
+            result = service.files().create(body=file_metadata).execute()
+            print('*****************************************')
+            print(' delete catalog = '+name_folder_save)
+            pp.pprint(result)
             return 'Запись сводного документа не найдена'
         cookies = {}
         cookies['3fbe47cd30daea60fc16041479413da2']=res1.cookies['3fbe47cd30daea60fc16041479413da2']
