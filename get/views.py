@@ -181,11 +181,20 @@ def main(image_id,image,excel):
                         f.write(req_img.content)
                         f.close()
                         list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
+
+                        name = str(item['id'])+'.jpg'
+                        print(name)
+                        file_metadata = {'name': name,'parents': [id_folder_save]}
+                        media = MediaFileUpload(dirpath+"/"+str(item['id'])+'.jpg', resumable=True,chunksize=-1, mimetype = 'image/jpg')
+                        r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+
+
                         if(excel):
                             workbook.save(filename = (str(image_id)+'_book.xlsx'))
 
 
         # загружаем файлы на GoogleDrive
+        '''
         for _file in list_file:
             name = os.path.basename(_file)
             print(_file)
@@ -193,6 +202,7 @@ def main(image_id,image,excel):
             media = MediaFileUpload(_file, resumable=True,chunksize=-1, mimetype = 'image/jpg')
             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
         # Определяем - записались ли файлы в каталог
+        '''
         result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
         if(result['files']):
             return web_link
