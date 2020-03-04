@@ -84,11 +84,13 @@ def main(image_id,image,excel):
         return 'webViewLink'
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
     img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
+    print(info_url)
     res1 = requests.get(info_url,allow_redirects = True)
     dirpath = tempfile.mkdtemp()
-
+    print('dirpath = '+dirpath)
     # создаем каталог сразу - один раз
     name_folder_save = str(image_id)+"_"+os.path.basename(tempfile.mktemp ())
+    print('name_folder_save = '+name_folder_save)
     #create catalog
     file_metadata = {
         'name': name_folder_save,
