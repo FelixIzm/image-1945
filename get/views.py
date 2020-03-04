@@ -173,7 +173,7 @@ def main(image_id,image,excel):
                     headers_img = parse_file(BASE_DIR+'/header_img.txt')
                     headers_img['Referer'] = info_url
                     #####################
-                    req_img = requests.get("https://cdn.obd-memorial.ru/html/images3",headers=headers_img,params=params,stream = True,allow_redirects = False )
+                    req_img = requests.get("https://cdn.obd-memorial.ru/html/images3",headers=headers_img,params=params,cookies=cookies,stream = True,allow_redirects = False )
                     #####################
                     if(req_img.status_code==200):
                         location = os.path.abspath(dirpath+"/"+str(item['id'])+'.jpg')
