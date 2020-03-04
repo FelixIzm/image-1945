@@ -86,6 +86,23 @@ def main(image_id,image,excel):
     img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
     res1 = requests.get(info_url,allow_redirects = True)
     dirpath = tempfile.mkdtemp()
+
+    # создаем каталог сразу - один раз
+    name_folder_save = str(image_id)+"_"+os.path.basename(tempfile.mktemp ())
+    #create catalog
+    file_metadata = {
+        'name': name_folder_save,
+        'mimeType': 'application/vnd.google-apps.folder',
+        'parents': [id_root_folder]
+    }
+    result = service.files().create(body=file_metadata, fields='id,webViewLink').execute()
+    # id каталога для сохранения
+    id_folder_save = result['id']
+    # ссылка на каталог
+    web_link = result['webViewLink']
+
+
+
     if(res1.status_code==307):
         print(res1.status_code)
         print('*****************')
@@ -148,32 +165,22 @@ def main(image_id,image,excel):
                         f.close()
                         list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
                         if(excel):
-                            workbook.save(filename = (name_folder_save+'_book.xlsx'))
+                            workbook.save(filename = (str(image_id)+'_book.xlsx'))
 
-                        name_folder_save = str(image_id)
-                        #create catalog
-                        file_metadata = {
-                            'name': name_folder_save+"_"+os.path.basename(tempfile.mktemp ()),
-                            'mimeType': 'application/vnd.google-apps.folder',
-                            'parents': [id_root_folder]
-                        }
-                        result = service.files().create(body=file_metadata, fields='id,webViewLink').execute()
-                        # id каталога для сохранения
-                        id_folder_save = result['id']
-                        # ссылка на каталог
-                        web_link = result['webViewLink']
 
-                        #загружаем файлы на GoogleDrive
+                        # загружаем файлы на GoogleDrive
                         for _file in list_file:
                             name = os.path.basename(_file)
                             print(_file)
                             file_metadata = {'name': name,'parents': [id_folder_save]}
                             media = MediaFileUpload(_file, resumable=True)
                             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-
-                        return web_link
-                    else:
-                        return 'records not found'
+        # Определяем - записались ли файлы в каталог
+        result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
+        if(result['files']):
+            return web_link
+        else:
+            return 'records not found'
 
 ##########################################
 def index(request):
