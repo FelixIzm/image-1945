@@ -16,6 +16,8 @@ import tempfile
 import pprint
 from openpyxl import Workbook
 from datetime import datetime
+import pytz
+
 
 image_id =''
 ##########################################
