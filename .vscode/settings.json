@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "C:\\Users\\Ozernaya\\AppData\\Local\\Programs\\Python\\Python36\\python.exe"
+    "python.pythonPath": "venv/bin/python",
+    "python.linting.pylintEnabled": true
 }

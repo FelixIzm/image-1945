@@ -32,12 +32,6 @@ pp = pprint.PrettyPrinter(indent=4)
 
 root_results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_root_folder'").safe_substitute(name_root_folder=name_root_folder)).execute()
 id_root_folder = root_results['files'][0]['id']
-print('********** root ***************')
-pp.pprint(root_results)
-print('********** root ***************')
-def mmm():
-    global root_results
-    return root_results['files'][0]['webViewLink']
 
 ######################################
 def parse_file (name_file):
@@ -102,8 +96,9 @@ def main(image_id,image,excel):
         #############################
         #   load list id's images   #
         #############################
-        response = requests.get(img_info)
+        response = requests.get(img_info,cookies=cookies)
         response_dict = json.loads(response.text)
+        print('response_dict = '+str(len(response_dict)))
         #############################
         i=0
         if(excel):
@@ -152,54 +147,44 @@ def main(image_id,image,excel):
                         f.write(req_img.content)
                         f.close()
                         list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
-#    if(excel):
-#        workbook.save(filename = 'sample_book.xlsx')
+                        if(excel):
+                            workbook.save(filename = (name_folder_save+'_book.xlsx'))
 
-    name_folder_save = str(image_id)
-    #create catalog
-    file_metadata = {
-        'name': name_folder_save+"_"+os.path.basename(tempfile.mktemp ()),
-        'mimeType': 'application/vnd.google-apps.folder',
-        'parents': [id_root_folder]
-    }
-    result = service.files().create(body=file_metadata, fields='id,webViewLink').execute()
-    print('****** create 1 ********')
-    pp.pprint(result)
-    print('****** create 2 ********')
-    # id каталога для сохранения
-    id_folder_save = result['id']
-    # ссылка на каталог
-    web_link = result['webViewLink']
+                        name_folder_save = str(image_id)
+                        #create catalog
+                        file_metadata = {
+                            'name': name_folder_save+"_"+os.path.basename(tempfile.mktemp ()),
+                            'mimeType': 'application/vnd.google-apps.folder',
+                            'parents': [id_root_folder]
+                        }
+                        result = service.files().create(body=file_metadata, fields='id,webViewLink').execute()
+                        # id каталога для сохранения
+                        id_folder_save = result['id']
+                        # ссылка на каталог
+                        web_link = result['webViewLink']
 
-    # получим список файлов в каталоге GoogleDrive, что бы не делать лишней работы
-    #list_files = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType, parents)",q=Template("'$id_parents_folder' in parents").safe_substitute(id_parents_folder=id_folder_save)).execute()
-    #list_files = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType, parents)",q=("'1C5tOqtnfjGRy7SKsNOcPlTUXx_euZwXG' in parents")).execute()
-    
-    #print('****** list 1 ********')
-    #pp.pprint(list_files)
-    #print('****** list 2 ********')
+                        #загружаем файлы на GoogleDrive
+                        for _file in list_file:
+                            name = os.path.basename(_file)
+                            print(_file)
+                            file_metadata = {'name': name,'parents': [id_folder_save]}
+                            media = MediaFileUpload(_file, resumable=True)
+                            r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
-    #control_list_file = []
-    #for file in list_files['files']:
-    #    control_list_file.append(file['name'])
-    ################################################################################
-    for _file in list_file:
-        name = os.path.basename(_file)
-        print(_file)
-        file_metadata = {'name': name,'parents': [id_folder_save]}
-        media = MediaFileUpload(_file, resumable=True)
-        r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-        
-    return web_link
+                        return web_link
+                    else:
+                        return 'records not found'
 
 ##########################################
 def index(request):
+    print(" __name__ = "+str(__name__))
     #return HttpResponse("Hello, world. You're at the polls index.")
-    image_id=''
+    image_id=0
     userform = UserForm({'image_id':image_id})
     image_id = request.POST.get("image_id")
 
-    #image_id = 85942988 #51480906
+    #image_id = 85942988 
+    # #51480906 Иванов 2 скана
     link = ''
     d = {'image':True, 'excel':False}
     link = main(image_id,**d)
