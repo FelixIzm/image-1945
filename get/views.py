@@ -91,7 +91,12 @@ def main(image_id,image,excel):
     print('dirpath = '+dirpath)
     # создаем каталог сразу - один раз
     #name_folder_save = str(image_id)+"_"+os.path.basename(tempfile.mktemp ())
-    name_folder_save = str(image_id)+'_'+datetime.now().strftime('%Y-%m-%d:%H_%M_%S')
+    d = datetime.now()
+    #.strftime('%Y-%m-%d:%H_%M_%S')
+    #print(d.tzinfo) # Return time zone info
+    d = pytz.timezone('Europe/Paris').localize(d)
+    print(d.strftime('%Y-%m-%d %H:%M:%S'))
+    name_folder_save = str(image_id)+' '+d.strftime('%Y-%m-%d %H:%M:%S')
     print('name_folder_save = '+name_folder_save)
     #create catalog
     file_metadata = {
