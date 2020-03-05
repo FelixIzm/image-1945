@@ -19,7 +19,7 @@ import pprint
 from openpyxl import Workbook
 from datetime import datetime
 import pytz
-import httplib2
+
 
 
 image_id =''
@@ -31,8 +31,7 @@ cols = ['ID scan','ID','Фамилия','Имя','Отчество','Дата р
 SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = 'obd.json'
 credentials = service_account.Credentials.from_service_account_file(os.path.join(BASE_DIR, SERVICE_ACCOUNT_FILE), scopes=SCOPES)
-http = httplib2.Http()
-service = build('drive', 'v3', credentials=credentials, http=http)
+service = build('drive', 'v3', credentials=credentials)
 name_root_folder = 'Folder'
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -193,6 +192,7 @@ def main(image_id,image,excel):
                             media = MediaFileUpload(dirpath+"/"+str(item['id'])+'.jpg', resumable=True,chunksize=-1, mimetype = 'image/jpg')
                             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
                         except HttpError as e:
+                            print('ERROR *************************')
                             print(e)
                             if e.resp.status in [404]:
                                 # Start the upload all over again.
@@ -203,6 +203,7 @@ def main(image_id,image,excel):
                             else:
                                 print('OK')
                             # Do not retry. Log the error and fail.
+                            print('ERROR *************************')
 
                         if(excel):
                             workbook.save(filename = (str(image_id)+'_book.xlsx'))
