@@ -19,6 +19,7 @@ import pprint
 from openpyxl import Workbook
 from datetime import datetime
 import pytz
+import httplib2
 
 
 image_id =''
@@ -30,7 +31,8 @@ cols = ['ID scan','ID','Фамилия','Имя','Отчество','Дата р
 SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = 'obd.json'
 credentials = service_account.Credentials.from_service_account_file(os.path.join(BASE_DIR, SERVICE_ACCOUNT_FILE), scopes=SCOPES)
-service = build('drive', 'v3', credentials=credentials)
+http = httplib2.Http()
+service = build('drive', 'v3', credentials=credentials, http=http)
 name_root_folder = 'Folder'
 
 pp = pprint.PrettyPrinter(indent=4)
