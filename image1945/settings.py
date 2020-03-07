@@ -29,7 +29,7 @@ SECRET_KEY = 'wa0-0f)o28o1*c(8af8969ekxai4tv=4#67(cahhh2q8lgu4+$'
 #DEBUG = False
 DEBUG = bool( os.environ.get('DJANGO_DEBUG', True) )
 
-ALLOWED_HOSTS = ['image-1945.herokuapp.com','127.0.0.1','localhost']
+ALLOWED_HOSTS = ['image-1945.herokuapp.com','127.0.0.1','localhost','ec2-52-211-109-92.eu-west-1.compute.amazonaws.com']
 
 
 # Application definition
