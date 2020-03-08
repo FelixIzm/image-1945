@@ -87,7 +87,7 @@ def get_info(id_scan,id,cookies):
 
 def main(image_id,image,excel):
     if(image_id==None):
-        return 'webViewLink'
+        return 'Ссылка на каталог -', ''
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
     img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
     print(info_url)
@@ -126,7 +126,7 @@ def main(image_id,image,excel):
             print('*****************************************')
             print(' delete catalog = '+name_folder_save)
             pp.pprint(result)
-            return 'Запись сводного документа не найдена'
+            return 'no folder','Запись сводного документа не найдена' 
         cookies = {}
         cookies['3fbe47cd30daea60fc16041479413da2']=res1.cookies['3fbe47cd30daea60fc16041479413da2']
         cookies['JSESSIONID']=res1.cookies['JSESSIONID']
@@ -186,8 +186,8 @@ def main(image_id,image,excel):
                         list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
 
                         name = str(item['id'])+'.jpg'
-                        print(name)
                         file_metadata = {'name': name,'parents': [id_folder_save]}
+
                         try:
                             media = MediaFileUpload(dirpath+"/"+str(item['id'])+'.jpg', resumable=True,chunksize=-1, mimetype = 'image/jpg')
                             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
@@ -204,9 +204,14 @@ def main(image_id,image,excel):
                                 print('OK')
                             # Do not retry. Log the error and fail.
                             print('ERROR *************************')
+        if(excel):
+            name = str(item['id'])+'.xlsx'
+            file_metadata = {'name': name,'parents': [id_folder_save]}
+            workbook.save(filename =  dirpath+"/"+str(item['id'])+'_book.xsls')
+            media = MediaFileUpload(dirpath+"/"+str(item['id'])+'_book.xsls', resumable=True,chunksize=-1, mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
-                        if(excel):
-                            workbook.save(filename = (str(image_id)+'_book.xlsx'))
+
 
 
         # загружаем файлы на GoogleDrive
@@ -221,9 +226,9 @@ def main(image_id,image,excel):
         '''
         result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
         if(result['files']):
-            return web_link
+            return web_link, name_folder_save
         else:
-            return 'records not found'
+            return 'no folder','records not found'
 
 ##########################################
 def index(request):
@@ -232,12 +237,22 @@ def index(request):
     image_id=0
     userform = UserForm({'image_id':image_id})
     image_id = request.POST.get("image_id")
+    if(image_id=='0'):
+        return render(request, "get/index.html", {"form": userform,"web_link": '<p> Ссылка на каталог -</p>' })
+
+    excel = request.POST.get("excel")
+    if(excel != None):
+        d = {'image':True, 'excel':True}
+    else:
+        d = {'image':True, 'excel':False}
+
 
     #image_id = 85942988 
     # #51480906 Иванов 2 скана
     link = ''
-    d = {'image':True, 'excel':False}
-    link = main(image_id,**d)
+    #d = {'image':True, 'excel':False}
+    link, folder = main(image_id,**d)
+    link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
     return render(request, "get/index.html", {"form": userform,"web_link": link})
 
 # Create your views here.
