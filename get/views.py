@@ -186,8 +186,8 @@ def main(image_id,image,excel):
                         list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
 
                         name = str(item['id'])+'.jpg'
-                        print(name)
                         file_metadata = {'name': name,'parents': [id_folder_save]}
+
                         try:
                             media = MediaFileUpload(dirpath+"/"+str(item['id'])+'.jpg', resumable=True,chunksize=-1, mimetype = 'image/jpg')
                             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
@@ -204,9 +204,14 @@ def main(image_id,image,excel):
                                 print('OK')
                             # Do not retry. Log the error and fail.
                             print('ERROR *************************')
+        if(excel):
+            name = str(item['id'])+'.xlsx'
+            file_metadata = {'name': name,'parents': [id_folder_save]}
+            workbook.save(filename =  dirpath+"/"+str(item['id'])+'_book.xsls')
+            media = MediaFileUpload(dirpath+"/"+str(item['id'])+'_book.xsls', resumable=True,chunksize=-1, mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
-                        if(excel):
-                            workbook.save(filename = (str(image_id)+'_book.xlsx'))
+
 
 
         # загружаем файлы на GoogleDrive
