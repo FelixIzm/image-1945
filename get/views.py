@@ -249,6 +249,7 @@ def index(request):
 
     #image_id = 85942988 
     # #51480906 Иванов 2 скана
+    # 86216576
     link = ''
     #d = {'image':True, 'excel':False}
     link, folder = main(image_id,**d)
