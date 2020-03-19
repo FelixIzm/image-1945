@@ -6,6 +6,7 @@
     <title>Image-1945</title>
     <style>body {font-family: Arial, sans-serif;}</style>
     <link rel="stylesheet" href="{% static '/css/input.css' %}">
+    <link rel="stylesheet" href="{% static '/css/grid.css' %}">
     <style>
         .myfield{
             border:1px solid #ccc; 
@@ -59,7 +60,14 @@
         </tr>
     </table>
 -->
-    {{ web_link|safe }}
+    {{ web_link|safe }}<br/>
+    <div class="wrapper">
+   <div>One</div>
+   <div>Two</div>
+   <div>Three</div>
+   <div>Four</div>
+   <div>Five</div>
+</div>
 
   </form>
 
