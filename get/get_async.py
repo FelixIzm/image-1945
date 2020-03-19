@@ -191,6 +191,8 @@ def main(image_id,image,excel):
         #############################
         response = requests.get(img_info,cookies=cookies)
         response_dict = json.loads(response.text)
+        print(response_dict)
+        exit(1)
         print('response_dict = '+str(len(response_dict)))
         #############################
         i=0
@@ -232,10 +234,10 @@ def main(image_id,image,excel):
 ##########################################
 
 
-#image_id = 85942988 
+image_id = 85942988 
 # #51480906 Иванов 2 скана
 # image_id = 86216576 # 106
-image_id = 51480906   # 2
+#image_id = 51480906   # 2
 
 link = ''
 d = {'image':True, 'excel':False}
