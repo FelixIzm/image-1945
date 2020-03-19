@@ -3,7 +3,7 @@
   border-radius: 5px;
   background-color: rgba(148, 211, 151, 0.5);
   padding: 1em;
-  color: #6264dd;
+  color: #d9480f;
 }.wrapper {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
