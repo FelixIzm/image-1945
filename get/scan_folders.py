@@ -33,5 +33,5 @@ for item in items:
         service.files().delete(fileId=item['id']).execute()
         print(item['id'])
     except HttpError as e:
-        print('Asssn error occurred: %s' % e)
+        print('Asssssn error occurred: %s' % e)
 
