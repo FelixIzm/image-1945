@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .forms import UserForm
+from .forms import UserForm, FormSelectDir
 import os, tempfile, requests, time
 #import get_image_google
 
@@ -233,27 +233,30 @@ def main(image_id,image,excel):
 ##########################################
 def index(request):
     print(" __name__ = "+str(__name__))
-    #return HttpResponse("Hello, world. You're at the polls index.")
-    image_id=0
-    userform = UserForm({'image_id':image_id})
-    image_id = request.POST.get("image_id")
-    if(image_id=='0'):
-        return render(request, "get/index.html", {"form": userform,"web_link": '<p> Ссылка на каталог -</p>' })
-
-    excel = request.POST.get("excel")
-    if(excel != None):
-        d = {'image':True, 'excel':True}
-    else:
-        d = {'image':True, 'excel':False}
-
-
-    #image_id = 85942988 
-    # #51480906 Иванов 2 скана
-    # 86216576
     link = ''
-    #d = {'image':True, 'excel':False}
-    link, folder = main(image_id,**d)
-    link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
-    return render(request, "get/index.html", {"form": userform,"web_link": link})
+    image_id='0'
+    path_dir = ''
+    userform = UserForm({'image_id':image_id})
+    form_dir = FormSelectDir({'path_dir':path_dir})
+    if('SendRequest' in request.POST):
+        #return HttpResponse("Hello, world. You're at the polls index.")
+        image_id = request.POST.get("image_id")
+        if(image_id=='0'):
+            return render(request, "get/index.html", {"form": userform,"web_link": '<p> Ссылка на каталог -</p>' })
+
+        excel = request.POST.get("excel")
+        if(excel != None):
+            d = {'image':True, 'excel':True}
+        else:
+            d = {'image':True, 'excel':False}
+
+
+        #image_id = 85942988 
+        # #51480906 Иванов 2 скана
+        # 86216576
+        #d = {'image':True, 'excel':False}
+        link, folder = main(image_id,**d)
+        link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
+    return render(request, "get/index.html", {"form": userform,"web_link": link,'form_dir':form_dir})
 
 # Create your views here.
