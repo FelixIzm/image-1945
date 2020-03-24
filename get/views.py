@@ -21,7 +21,6 @@ from datetime import datetime
 import pytz
 
 
-
 image_id =''
 ##########################################
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -257,6 +256,12 @@ def index(request):
         #d = {'image':True, 'excel':False}
         link, folder = main(image_id,**d)
         link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
-    return render(request, "get/index.html", {"form": userform,"web_link": link,'form_dir':form_dir})
+        return render(request, "get/index.html", {"form": userform,"web_link": link})
+    elif("SelectDir" in request.POST):
+        filename=''
+        form_dir = FormSelectDir({'path_dir':filename})
+        return render(request, "get/index.html", {'form_dir':form_dir})
+    else:
+        return render(request, "get/index.html", {"form": userform,"web_link": link,'form_dir':form_dir})
 
 # Create your views here.
