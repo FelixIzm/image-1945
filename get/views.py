@@ -18,8 +18,8 @@ import tempfile
 import pprint
 from openpyxl import Workbook
 from datetime import datetime
-from tkinter import filedialog
-from tkinter import *
+#from tkinter import filedialog
+#from tkinter import *
 
 
 
@@ -40,13 +40,14 @@ pp = pprint.PrettyPrinter(indent=4)
 root_results = service.files().list(pageSize=10,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_root_folder'").safe_substitute(name_root_folder=name_root_folder)).execute()
 id_root_folder = root_results['files'][0]['id']
 
+'''
 def get_Folder():
     root = Tk()
     root.withdraw()
     filename = filedialog.askdirectory()
     print(filename)
     return filename
-
+'''
 ######################################
 def parse_file (name_file):
     dict_ = {}
@@ -402,7 +403,7 @@ def index(request):
         link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
         return render(request, "get/index.html", {"form": userform,"web_link": link})
     elif("SelectDir" in request.POST):
-        filename= get_Folder()
+        filename= 'test'
         form_dir = FormSelectDir({'path_dir':filename})
         return render(request, "get/index.html", {'form_dir':form_dir})
     else:
