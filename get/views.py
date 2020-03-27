@@ -23,7 +23,8 @@ from openpyxl import Workbook
 from datetime import datetime
 #from tkinter import filedialog
 #from tkinter import *
-
+from StringIO import StringIO
+from zipfile import ZipFile
 
 
 image_id =''
@@ -377,6 +378,28 @@ def local_main(image_id,image,excel):
         else:
             return 'no folder','records not found'
 
+def download():     
+    
+    in_memory = StringIO()
+    zip = ZipFile(in_memory, "a")
+        
+    zip.writestr("file1.txt", "some text contents")
+    zip.writestr("file2.csv", "csv,data,here")
+    
+    # fix for Linux zip files read in Windows
+    for file in zip.filelist:
+        file.create_system = 0    
+        
+    zip.close()
+
+    response = HttpResponse(mimetype="application/zip")
+    response["Content-Disposition"] = "attachment; filename=two_files.zip"
+    
+    in_memory.seek(0)    
+    response.write(in_memory.read())
+    
+    return response
+
 ##########################################
 def index(request):
     print(" __name__ = "+str(__name__))
@@ -406,12 +429,16 @@ def index(request):
         link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
         return render(request, "get/index.html", {"form": userform,"web_link": link})
     elif("SelectDir" in request.POST):
-        file_name = 'test.txt' #get the filename of desired excel file
-        path_to_file = BASE_DIR+'/image/' #get the path of desired excel file
-        response = HttpResponse(content_type='application/force-download')
-        response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(file_name)
-        response['X-Sendfile'] = smart_str(path_to_file)
-        return response
+
+        return download()
+
+        #file_name = 'test.txt' #get the filename of desired excel file
+        #path_to_file = BASE_DIR+'/image/' #get the path of desired excel file
+        #response = HttpResponse(content_type='application/force-download')
+        #response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(file_name)
+        #response['X-Sendfile'] = smart_str(path_to_file)
+        #return response
+        ###########################################
         #form_dir = FormSelectDir({'path_dir':filename})
         #return render(request, "get/index.html", {'form_dir':form_dir})
     else:
