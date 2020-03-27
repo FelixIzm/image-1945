@@ -392,7 +392,7 @@ def download():
         
     zip.close()
 
-    response = HttpResponse(mimetype="application/zip")
+    response = HttpResponse(content_type="application/zip")
     response["Content-Disposition"] = "attachment; filename=two_files.zip"
     
     in_memory.seek(0)    
