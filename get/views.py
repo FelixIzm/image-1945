@@ -23,7 +23,10 @@ from openpyxl import Workbook
 from datetime import datetime
 #from tkinter import filedialog
 #from tkinter import *
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from zipfile import ZipFile
 
 
