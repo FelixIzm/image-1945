@@ -1,5 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.http import FileResponse
+from django.utils.encoding import smart_str
+
 from .forms import UserForm, FormSelectDir
 import os, tempfile, requests, time
 #import get_image_google
@@ -403,9 +406,14 @@ def index(request):
         link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
         return render(request, "get/index.html", {"form": userform,"web_link": link})
     elif("SelectDir" in request.POST):
-        filename= 'test'
-        form_dir = FormSelectDir({'path_dir':filename})
-        return render(request, "get/index.html", {'form_dir':form_dir})
+        file_name = 'test.txt' #get the filename of desired excel file
+        path_to_file = BASE_DIR+'/image/' #get the path of desired excel file
+        response = HttpResponse(content_type='application/force-download')
+        response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(file_name)
+        response['X-Sendfile'] = smart_str(path_to_file)
+        return response
+        #form_dir = FormSelectDir({'path_dir':filename})
+        #return render(request, "get/index.html", {'form_dir':form_dir})
     else:
         return render(request, "get/index.html", {"form": userform,"web_link": link,'form_dir':form_dir})
 
