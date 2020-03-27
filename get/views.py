@@ -383,7 +383,7 @@ def local_main(image_id,image,excel):
 
 def download():     
     
-    in_memory = StringIO()
+    in_memory = BytesIO()
     zip = ZipFile(in_memory, "a")
         
     zip.writestr("file1.txt", "some text contents")
