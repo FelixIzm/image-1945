@@ -246,42 +246,12 @@ def local_main(image_id,image,excel):
         return 'Ссылка на каталог -', ''
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
     img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
-    print(info_url)
     res1 = requests.get(info_url,allow_redirects = True)
     dirpath = tempfile.mkdtemp()
     print('dirpath = '+dirpath)
-    # создаем каталог сразу - один раз
-    #name_folder_save = str(image_id)+"_"+os.path.basename(tempfile.mktemp ())
-    d = datetime.now()
-    #.strftime('%Y-%m-%d:%H_%M_%S')
-    #print(d.tzinfo) # Return time zone info
-    #d = pytz.timezone('Europe/Paris').localize(d)
-    #print(d.strftime('%Y-%m-%d %H:%M:%S'))
-    name_folder_save = str(image_id)+' '+d.strftime('%Y-%m-%d %H:%M:%S')
-    print('name_folder_save = '+name_folder_save)
-    #create catalog
-    file_metadata = {
-        'name': name_folder_save,
-        'mimeType': 'application/vnd.google-apps.folder',
-        'parents': [id_root_folder]
-    }
-    result = service.files().create(body=file_metadata, fields='id,webViewLink').execute()
-    # id каталога для сохранения
-    id_folder_save = result['id']
-    # ссылка на каталог
-    web_link = result['webViewLink']
-
-
 
     if(res1.status_code==307):
-        print(res1.status_code)
-        print('*****************')
         if(not '3fbe47cd30daea60fc16041479413da2' in res1.cookies):
-            # Удаляем каталог за ненадобностью
-            result = service.files().delete(fileId=id_folder_save).execute()
-            print('*****************************************')
-            print(' delete catalog = '+name_folder_save)
-            pp.pprint(result)
             return 'no folder','Запись сводного документа не найдена' 
         cookies = {}
         cookies['3fbe47cd30daea60fc16041479413da2']=res1.cookies['3fbe47cd30daea60fc16041479413da2']
@@ -292,7 +262,6 @@ def local_main(image_id,image,excel):
         response = requests.get(img_info,cookies=cookies)
         response_dict = json.loads(response.text)
         print('response_dict = '+str(len(response_dict)))
-        return str(len(response_dict)), ''
         #############################
         i=0
         if(excel):
@@ -336,46 +305,19 @@ def local_main(image_id,image,excel):
                     req_img = requests.get("https://cdn.obd-memorial.ru/html/images3",headers=headers_img,params=params,cookies=cookies,stream = True,allow_redirects = False )
                     #####################
                     if(req_img.status_code==200):
+                        name = str(item['id'])+'.jpg'
                         location = os.path.abspath(dirpath+"/"+str(item['id'])+'.jpg')
                         f = open(location, 'wb')
                         f.write(req_img.content)
                         f.close()
                         list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
 
-                        name = str(item['id'])+'.jpg'
-                        file_metadata = {'name': name,'parents': [id_folder_save]}
-
-                        try:
-                            media = MediaFileUpload(dirpath+"/"+str(item['id'])+'.jpg', resumable=True,chunksize=-1, mimetype = 'image/jpg')
-                            r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-                        except HttpError as e:
-                            print('ERROR *************************')
-                            print(e)
-                            if e.resp.status in [404]:
-                                # Start the upload all over again.
-                                print("ERROR404 ********")
-                            elif e.resp.status in [500, 502, 503, 504]:
-                                print("ERROR 50* ********")
-                                # Call next_chunk() again, but use an exponential backoff for repeated errors.
-                            else:
-                                print('OK')
-                            # Do not retry. Log the error and fail.
-                            print('ERROR *************************')
         if(excel):
             name = str(item['id'])+'.xlsx'
-            file_metadata = {'name': name,'parents': [id_folder_save]}
             workbook.save(filename =  dirpath+"/"+str(item['id'])+'_book.xsls')
-            media = MediaFileUpload(dirpath+"/"+str(item['id'])+'_book.xsls', resumable=True,chunksize=-1, mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
 
-
-
-        result = service.files().list(pageSize=1000,fields="nextPageToken, files(id, name, mimeType,webViewLink)",q=Template("name contains '$name_folder_save'").safe_substitute(name_folder_save=name_folder_save)).execute()
-        if(result['files']):
-            return web_link, name_folder_save
-        else:
-            return 'no folder','records not found'
+        return dirpath, len(list_file)
 #####################################################3
 def download():     
     in_memory = BytesIO()
@@ -427,7 +369,7 @@ def index(request):
         link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
         return render(request, "get/index.html", {"form": userform,"web_link": link})
     elif("SelectDir" in request.POST):
-        d = {'image':True, 'excel':False}
+        d = {'image':True, 'excel':True}
         image_id = 86216576
         link, folder = local_main(image_id,**d)
 
