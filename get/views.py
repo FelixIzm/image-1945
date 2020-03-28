@@ -21,8 +21,6 @@ import tempfile
 import pprint
 from openpyxl import Workbook
 from datetime import datetime
-#from tkinter import filedialog
-#from tkinter import *
 from io import BytesIO
 from zipfile import ZipFile
 
@@ -112,8 +110,8 @@ def main(image_id,image,excel):
     d = datetime.now()
     #.strftime('%Y-%m-%d:%H_%M_%S')
     #print(d.tzinfo) # Return time zone info
-    d = pytz.timezone('Europe/Paris').localize(d)
-    print(d.strftime('%Y-%m-%d %H:%M:%S'))
+    #d = pytz.timezone('Europe/Paris').localize(d)
+    #print(d.strftime('%Y-%m-%d %H:%M:%S'))
     name_folder_save = str(image_id)+' '+d.strftime('%Y-%m-%d %H:%M:%S')
     print('name_folder_save = '+name_folder_save)
     #create catalog
@@ -257,8 +255,8 @@ def local_main(image_id,image,excel):
     d = datetime.now()
     #.strftime('%Y-%m-%d:%H_%M_%S')
     #print(d.tzinfo) # Return time zone info
-    d = pytz.timezone('Europe/Paris').localize(d)
-    print(d.strftime('%Y-%m-%d %H:%M:%S'))
+    #d = pytz.timezone('Europe/Paris').localize(d)
+    #print(d.strftime('%Y-%m-%d %H:%M:%S'))
     name_folder_save = str(image_id)+' '+d.strftime('%Y-%m-%d %H:%M:%S')
     print('name_folder_save = '+name_folder_save)
     #create catalog
@@ -294,6 +292,7 @@ def local_main(image_id,image,excel):
         response = requests.get(img_info,cookies=cookies)
         response_dict = json.loads(response.text)
         print('response_dict = '+str(len(response_dict)))
+        return str(len(response_dict)), ''
         #############################
         i=0
         if(excel):
@@ -377,9 +376,8 @@ def local_main(image_id,image,excel):
             return web_link, name_folder_save
         else:
             return 'no folder','records not found'
-
+#####################################################3
 def download():     
-    
     in_memory = BytesIO()
     zip = ZipFile(in_memory, "a")
         
@@ -388,7 +386,7 @@ def download():
     
     # fix for Linux zip files read in Windows
     for file in zip.filelist:
-        file.create_system = 0    
+        file.create_system = 0
         
     zip.close()
 
@@ -429,8 +427,14 @@ def index(request):
         link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
         return render(request, "get/index.html", {"form": userform,"web_link": link})
     elif("SelectDir" in request.POST):
+        d = {'image':True, 'excel':False}
+        image_id = 86216576
+        link, folder = local_main(image_id,**d)
 
-        return download()
+        form_dir = FormSelectDir({'path_dir':link})
+        return render(request, "get/index.html", {'form_dir':form_dir})
+
+        #return download()
 
         #file_name = 'test.txt' #get the filename of desired excel file
         #path_to_file = BASE_DIR+'/image/' #get the path of desired excel file
