@@ -23,7 +23,7 @@ from openpyxl import Workbook
 from datetime import datetime
 from io import BytesIO
 from zipfile import ZipFile
-
+import fnmatch
 
 image_id =''
 ##########################################
@@ -218,8 +218,8 @@ def main(image_id,image,excel):
         if(excel):
             name = str(item['id'])+'.xlsx'
             file_metadata = {'name': name,'parents': [id_folder_save]}
-            workbook.save(filename =  dirpath+"/"+str(item['id'])+'_book.xsls')
-            media = MediaFileUpload(dirpath+"/"+str(item['id'])+'_book.xsls', resumable=True,chunksize=-1, mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            workbook.save(filename =  dirpath+"/"+str(item['id'])+'_book.xlsx')
+            media = MediaFileUpload(dirpath+"/"+str(item['id'])+'_book.xlsx', resumable=True,chunksize=-1, mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             r = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
 
@@ -314,11 +314,26 @@ def local_main(image_id,image,excel):
 
         if(excel):
             name = str(item['id'])+'.xlsx'
-            workbook.save(filename =  dirpath+"/"+str(item['id'])+'_book.xsls')
+            workbook.save(filename =  dirpath+"/"+str(item['id'])+'_book.xlsx')
 
 
         return dirpath, len(list_file)
-#####################################################3
+#####################################################
+# zipFilesInDir('sampleDir', 'sampleDir2.zip', lambda name : 'csv' in name)
+def zipFilesInDir(dirName, zipFileName, filter):
+    extensions = ['.jpg','.xlsx']
+    # create a ZipFile object
+    with ZipFile(os.path.join(dirName,zipFileName), 'w') as zipObj:
+       # Iterate over all the files in directory
+       for folderName, subfolders, filenames in os.walk(dirName):
+           for filename in filenames:
+               for each in extensions:
+                   if filename.endswith(each):
+                        # create complete filepath of file in directory
+                        filePath = os.path.join(folderName, filename)
+                        # Add file to zip
+                        zipObj.write(filePath, filename)
+#####################################################
 def download():     
     in_memory = BytesIO()
     zip = ZipFile(in_memory, "a")
@@ -370,8 +385,9 @@ def index(request):
         return render(request, "get/index.html", {"form": userform,"web_link": link})
     elif("SelectDir" in request.POST):
         d = {'image':True, 'excel':True}
-        image_id = 86216576
+        image_id = 85942988
         link, folder = local_main(image_id,**d)
+        zipFilesInDir(link, 'sampleDir2.zip', lambda name : 'jpg' in name)
 
         form_dir = FormSelectDir({'path_dir':link})
         return render(request, "get/index.html", {'form_dir':form_dir})
