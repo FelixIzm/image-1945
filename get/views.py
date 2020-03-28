@@ -310,6 +310,7 @@ def local_main(image_id,image,excel):
                         f = open(location, 'wb')
                         f.write(req_img.content)
                         f.close()
+                        print(dirpath+"/"+str(item['id'])+'.jpg')
                         list_file.append(dirpath+"/"+str(item['id'])+'.jpg')
 
         if(excel):
