@@ -4,7 +4,7 @@ from django.http import FileResponse
 from django.utils.encoding import smart_str
 
 from .forms import UserForm, FormSelectDir
-import os, tempfile, requests, time
+import os
 #import get_image_google
 
 import requests, json, re
@@ -23,9 +23,11 @@ from openpyxl import Workbook
 from datetime import datetime
 from io import BytesIO
 from zipfile import ZipFile
-import fnmatch
 
-image_id =''
+from random_user_agent.user_agent import UserAgent
+from random_user_agent.params import SoftwareName, OperatingSystem
+
+image_id = ''
 ##########################################
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -97,6 +99,13 @@ def get_info(id_scan,id,cookies):
 #####################################
 
 def main(image_id,image,excel):
+
+    software_names = [SoftwareName.CHROME.value]
+    operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value]   
+    user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems, limit=100)
+    # Get list of user agents.
+    user_agents = user_agent_rotator.get_user_agents()
+
     if(image_id==None):
         return 'Ссылка на каталог -', ''
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
@@ -185,6 +194,7 @@ def main(image_id,image,excel):
                     params['id1'] = getStringHash(item['id'])
                     params['path'] = item['img']
                     headers_img = parse_file(BASE_DIR+'/header_img.txt')
+                    header_img['User-Agent'] = user_agent_rotator.get_random_user_agent()
                     headers_img['Referer'] = info_url
                     #####################
                     req_img = requests.get("https://cdn.obd-memorial.ru/html/images3",headers=headers_img,params=params,cookies=cookies,stream = True,allow_redirects = False )
