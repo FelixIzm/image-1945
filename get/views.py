@@ -373,7 +373,7 @@ def index(request):
     image_id='0'
     path_dir = ''
     userform = UserForm({'image_id':image_id})
-    form_dir = FormSelectDir({'path_dir':path_dir})
+    #form_dir = FormSelectDir({'path_dir':path_dir})
     if('SendRequest' in request.POST):
         #return HttpResponse("Hello, world. You're at the polls index.")
         image_id = request.POST.get("image_id")
@@ -401,7 +401,7 @@ def index(request):
         zipFilesInDir(link, 'sampleDir2.zip', lambda name : 'jpg' in name)
 
         form_dir = FormSelectDir({'path_dir':link})
-        return render(request, "get/index.html", {'form_dir':form_dir})
+        return render(request, "get/index.html", {'form':form_dir, 'path_dir':link})
 
         #return download()
 
