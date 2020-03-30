@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.http import FileResponse
 from django.utils.encoding import smart_str
 
-from .forms import UserForm, FormSelectDir
+from .forms import FormSelectId
 import os
 
 import requests, json
@@ -78,7 +78,9 @@ def local_main(image_id):
         return 'Ссылка на каталог -', ''
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
     img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
-    res1 = requests.get(info_url,allow_redirects = True)
+    print('1 -- ***********************************')
+    res1 = requests.get(info_url, allow_redirects = True)
+    print('2 -- ***********************************')
 
     in_memory = BytesIO()
     zipObj = ZipFile(in_memory, "a")
@@ -101,7 +103,7 @@ def local_main(image_id):
         row_csv = []
         output = io.StringIO()
         writer = csv.writer(output, quoting=csv.QUOTE_NONNUMERIC)
-        for col_num, column_title in enumerate(columns, 1):
+        for col_num, column_title in enumerate(cols, 1):
             row_csv.append(column_title)
         writer.writerow(row_csv)
         # идем по списку id сканов
@@ -133,13 +135,13 @@ def local_main(image_id):
                     name_jpg = str(item['id'])+'.jpg'
                     zipObj.writestr(name_jpg, req_img.content)
 
-        zipObj.writestr(str(item['id'])+'_book.csv', output.getvalue())
+        zipObj.writestr(str(image_id)+'_book.csv', output.getvalue())
         # fix for Linux zip files read in Windows
         for file in zipObj.filelist:
             file.create_system = 0
     zipObj.close()
     response = HttpResponse(content_type="application/zip")
-    response["Content-Disposition"] = "attachment; filename="+str(item['id'])+".zip"
+    response["Content-Disposition"] = "attachment; filename="+str(image_id)+".zip"
     in_memory.seek(0)    
     response.write(in_memory.read())
     return response
@@ -148,38 +150,16 @@ def local_main(image_id):
 def index(request):
     print(" __name__ = "+str(__name__))
     link = ''
-    image_id = '0'
-    path_dir = ''
-    userform = UserForm({'image_id':image_id})
-    form_dir = FormSelectDir({'path_dir':path_dir})
-    if('SendRequest' in request.POST):
-        #return HttpResponse("Hello, world. You're at the polls index.")
-        image_id = request.POST.get("image_id")
-        if(image_id=='0'):
-            return render(request, "get/index.html", {"form": userform,"web_link": '<p> Ссылка на каталог -</p>' })
-
-        excel = request.POST.get("excel")
-        if(excel != None):
-            d = {'image':True, 'excel':True}
-        else:
-            d = {'image':True, 'excel':False}
-
-
-        #image_id = 85942988 
-        # #51480906 Иванов 2 скана
-        # 86216576
-        #d = {'image':True, 'excel':False}
-        link, folder = main(image_id,**d)
-        link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
-        return render(request, "get/index.html", {"form": userform,"web_link": link})
-    elif("SelectDir" in request.POST):
-        image_id = request.POST.get("image_id")
+    _id = '0'
+    form_dir = FormSelectId({'_id':_id})
+    if("SelectId" in request.POST):
+        image_id = request.POST.get("_id")
         if(image_id == '0'):
-            return render(request, "get/index.html", {"form": userform,"web_link": '<p> Ссылка на каталог -</p>' })
+            return render(request, "get/index.html", {"form_dir": form_dir })
         #image_id = 85942988
         return local_main(image_id)
 
     else:
-        return render(request, "get/index.html", {"form": userform,"web_link": link,'form_dir':form_dir})
+        return render(request, "get/index.html", {'form_dir':form_dir})
 
 # Create your views here.

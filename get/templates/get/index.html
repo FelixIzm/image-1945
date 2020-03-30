@@ -7,7 +7,6 @@
     <style>body {font-family: Arial, sans-serif;}</style>
     <link rel="stylesheet" href="{% static '/css/input.css' %}">
     <link rel="stylesheet" href="{% static '/css/grid.css' %}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
 </head>
 <body>
 <br/>
@@ -15,20 +14,12 @@
    <div>
     <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}<input type="submit" value="Send ID" name="SendRequest">
-
-    {{ web_link|safe }}<br/>
-   </div>
-   <div>
-    <form method="POST">
-        {% csrf_token %}
         {{ form_dir.as_p }}
-        <input type="submit" value="Select Directory" name="SelectDir">
+        <input type="submit" value="Get Scans" name="SelectId">
     </form>
    </div>
 </div>
 
-  </form>
 
 </body>
 </html>
