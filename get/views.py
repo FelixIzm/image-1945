@@ -74,16 +74,14 @@ def get_info(id_scan,id,cookies):
 #            MAIN!!!!!!!!!!         #
 #####################################
 def local_main(image_id):
-    if(image_id==None):
+    if(image_id == None):
         return 'Ссылка на каталог -', ''
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
     img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
     res1 = requests.get(info_url,allow_redirects = True)
 
     in_memory = BytesIO()
-    zip = ZipFile(in_memory, "a")
-        
-    
+    zipObj = ZipFile(in_memory, "a")
 
     if(res1.status_code==307):
         if(not '3fbe47cd30daea60fc16041479413da2' in res1.cookies):
@@ -98,7 +96,6 @@ def local_main(image_id):
         response_dict = json.loads(response.text)
         print('response_dict = '+str(len(response_dict)))
         #############################
-        i=0
         #if(excel):
         columns = cols
         row_csv = []
@@ -109,7 +106,6 @@ def local_main(image_id):
         writer.writerow(row_csv)
         # идем по списку id сканов
         for item in response_dict:
-            i+=1
             #if(excel):
             for id in item['mapData'].keys():
                 row = get_info(item['id'],id,cookies)
@@ -135,32 +131,24 @@ def local_main(image_id):
                 #####################
                 if(req_img.status_code==200):
                     name_jpg = str(item['id'])+'.jpg'
-                    zip.writestr(name_jpg, req_img.content)
+                    zipObj.writestr(name_jpg, req_img.content)
 
-        #if(excel):
-        #    name = str(item['id'])+'.xlsx'
-        #    workbook.save(filename =  dirpath+"/"+str(item['id'])+'_book.xlsx')
-        zip.writestr(str(item['id'])+'_book.csv', output.getvalue())
-
+        zipObj.writestr(str(item['id'])+'_book.csv', output.getvalue())
         # fix for Linux zip files read in Windows
-        for file in zip.filelist:
+        for file in zipObj.filelist:
             file.create_system = 0
-            
-    zip.close()
+    zipObj.close()
     response = HttpResponse(content_type="application/zip")
     response["Content-Disposition"] = "attachment; filename="+str(item['id'])+".zip"
-  
     in_memory.seek(0)    
     response.write(in_memory.read())
-    
     return response
 
-#    return dirpath, len(list_file)
 #####################################################
 def index(request):
     print(" __name__ = "+str(__name__))
     link = ''
-    image_id='0'
+    image_id = '0'
     path_dir = ''
     userform = UserForm({'image_id':image_id})
     form_dir = FormSelectDir({'path_dir':path_dir})
@@ -185,9 +173,10 @@ def index(request):
         link = '<p> Ссылка на каталог -  <a target="_blank" href="{}">{}</a></p>'.format(link, folder)
         return render(request, "get/index.html", {"form": userform,"web_link": link})
     elif("SelectDir" in request.POST):
-        image_id = 85942988
-        #link, folder = local_main(image_id,**d)
-        #return zipFilesInDir(link, 'sampleDir2.zip')
+        image_id = request.POST.get("image_id")
+        if(image_id == '0'):
+            return render(request, "get/index.html", {"form": userform,"web_link": '<p> Ссылка на каталог -</p>' })
+        #image_id = 85942988
         return local_main(image_id)
 
     else:
