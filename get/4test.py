@@ -1,31 +1,31 @@
-from concurrent.futures import ThreadPoolExecutor as PoolExecutor
+#from concurrent.futures import ThreadPoolExecutor as PoolExecutor
 import requests
 #from requests.exceptions import Timeout, HTTPError
 import json
 import random
 import time
-import threading
 from lxml.html import fromstring
 import hashlib
 import os
 from string import Template
 import tempfile
 from openpyxl import Workbook
-from datetime import datetime
-import threading
-from concurrent.futures import ThreadPoolExecutor as PoolExecutor
 from io import BytesIO
 from zipfile import ZipFile
 import csv
 import io
+import aiohttp
+import asyncio
 
 
-image_id=85942988
+image_id = 85942988
 cookies = {}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 dirpath = tempfile.mkdtemp()
 print('dirpath = '+dirpath)
+in_memory = BytesIO()
+zipObj = ZipFile(in_memory, "a")
 
 #####################################
 def getStringHash(id):
@@ -66,15 +66,14 @@ def get_lists(image_id):
         img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
         response = requests.get(img_info)
         response_dict = json.loads(response.text)
-        i=0
         for item in response_dict:
-            i+=1
             #img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
-            list_id_images.append({'id':item['id'],'img':item['img']})
+            list_urls_infocards  = []
             for id in item['mapData'].keys():
                 info_url = 'https://obd-memorial.ru/html/info.htm?id='+str(id)
                 list_urls_infocards.append(info_url)
-    return(list_id_images,list_urls_infocards, cookies)
+            list_id_images.append({'id':item['id'],'img':item['img'],'urls_infocards':list_urls_infocards})
+    return(list_id_images, cookies)
 
 #def get_images(list_item_images):
 def get_images(item):
@@ -94,28 +93,44 @@ def get_images(item):
         headers_img = parse_file(BASE_DIR+'/header_img.txt')
         headers_img['Referer'] = info_url
         #####################
-        req_img = requests.get("https://cdn.obd-memorial.ru/html/images3",headers=headers_img,params=params,cookies=cookies,stream = True,allow_redirects = False )
+        req_img = requests.get("https://cdn.obd-memorial.ru/html/images3", headers=headers_img, params=params, cookies=cookies, stream=True, allow_redirects=False )
         #####################
         if(req_img.status_code==200):
-            print('200')
-            location = os.path.abspath(dirpath+"/"+str(item['id'])+'.jpg')
-            f = open(location, 'wb')
-            f.write(req_img.content)
-            f.close()
             name_jpg = str(item['id'])+'.jpg'
             zipObj.writestr(name_jpg, req_img.content)
 
 
 
-in_memory = BytesIO()
-zipObj = ZipFile(in_memory, "a")
 
-list_images, list_infocards, cookies = get_lists(image_id)
-print('img count = ',len(list_images))
+list_images, cookies = get_lists(image_id)
+print('img count = ', list_images)
 print('info count = ',len(list_infocards))
+exit(1)
 #get_images(list_images, cookies)
 #print(list_images)
 ###################################
-with PoolExecutor(max_workers=1) as executor:
-   for _ in executor.map(get_images, list_images):
-       pass
+
+loop = asyncio.get_event_loop()
+headers_img = parse_file(BASE_DIR+'/header_img.txt')
+headers_img['cookies'] = make_str_cookie(cookies)
+headers_img['Referer'] = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
+
+coroutines = [get(url, cookies, headers_img) for url in url_list]
+
+results = loop.run_until_complete(asyncio.gather(*coroutines))
+
+print(len(results))
+
+for res in results:
+    print(res.status)
+
+
+for file in zipObj.filelist:
+    file.create_system = 0
+
+zipObj.close()
+in_memory.seek(0)    
+print(zipObj.filelist)
+
+with open('test.zip', 'wb') as f:
+    f.write(in_memory.read())
