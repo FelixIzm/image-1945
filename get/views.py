@@ -78,9 +78,7 @@ def local_main(image_id):
         return 'Ссылка на каталог -', ''
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
     img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
-    print('1 -- ***********************************')
     res1 = requests.get(info_url, allow_redirects = True)
-    print('2 -- ***********************************')
 
     in_memory = BytesIO()
     zipObj = ZipFile(in_memory, "a")
