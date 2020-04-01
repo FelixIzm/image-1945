@@ -23,8 +23,8 @@ image_id = 70782617 #482
 cookies = {}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-dirpath = tempfile.mkdtemp()
-print('dirpath = '+dirpath)
+#dirpath = tempfile.mkdtemp()
+#print('dirpath = '+dirpath)
 in_memory = BytesIO()
 zipObj = ZipFile(in_memory, "a")
 global_i = 0
@@ -107,21 +107,21 @@ async def get_images_async(item, cookies, header_img):
     global headers_302, global_i
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(str(item['id']))
     img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
+    params = {}
+    params['id'] = str(item['id'])
+    params['id1'] = getStringHash(item['id'])
+    params['path'] = item['img']
+
     headers_302 = parse_file(BASE_DIR+'/header_302.txt')
     headers_302['Cookie'] = make_str_cookie(cookies)
     headers_302['Referer'] = info_url
     async with aiohttp.ClientSession() as session:
-        async with session.get(img_url,headers=headers_302,cookies=cookies) as resp:
-            global_i +=1
+        async with session.get("https://obd-memorial.ru/html/images3",params=params,headers=headers_302,cookies=cookies) as resp:
+            #while not resp.content.at_eof():
+            #    line = await resp.content.read()
             
-            while True:
-                chunk = await resp.content.read(1024)
-                if not chunk:
-                    break
-
-
-            print(global_i,await resp.read(),item['id'])
-            return resp
+            #print(global_i,item['id'])
+            return await resp.content.read(), item['id']
             #print(await resp.text())
 
 
@@ -154,13 +154,17 @@ async def get(url, cookies, headers):
 list_images, cookies = get_lists(image_id)
 #print('img count = ', list_images)
 #print('cookies = ',cookies)
+in_memory = BytesIO()
+zipObj = ZipFile(in_memory, "a")
 
 loop = asyncio.get_event_loop()
 coroutines = [get_images_async(item, cookies, headers_img) for item in list_images]
 results = loop.run_until_complete(asyncio.gather(*coroutines))
 print(len(results))
-#for res in results:
-#    print(res.status)
+for res in results:
+    #print(res[0])
+    name_jpg = str(res[1])+'.jpg'
+    zipObj.writestr(name_jpg, res[0])
 
 
 exit(1)
