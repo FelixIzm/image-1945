@@ -19,7 +19,7 @@ import asyncio
 
 
 image_id = 85942988 # 6
-image_id = 70782617 #482
+#image_id = 70782617 #482
 cookies = {}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -166,6 +166,10 @@ for res in results:
     name_jpg = str(res[1])+'.jpg'
     zipObj.writestr(name_jpg, res[0])
 
+in_memory.seek(0)    
+
+with open("my_zip.zip", "wb") as f: # use `wb` mode
+    f.write(in_memory.read())
 
 exit(1)
 #get_images(list_images, cookies)
