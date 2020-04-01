@@ -19,7 +19,7 @@ import asyncio
 
 
 image_id = 85942988 # 6
-#image_id = 70782617 #482
+image_id = 70782617 #482
 cookies = {}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
