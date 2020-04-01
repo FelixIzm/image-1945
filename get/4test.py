@@ -18,7 +18,8 @@ import aiohttp
 import asyncio
 
 
-image_id = 85942988
+image_id = 85942988 # 6
+image_id = 70782617 #482
 cookies = {}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -26,7 +27,7 @@ dirpath = tempfile.mkdtemp()
 print('dirpath = '+dirpath)
 in_memory = BytesIO()
 zipObj = ZipFile(in_memory, "a")
-
+global_i = 0
 #####################################
 def getStringHash(id):
     h = hashlib.md5(str(id).encode()+b'db76xdlrtxcxcghn7yusxjcdxsbtq1hnicnaspohh5tzbtgqjixzc5nmhybeh')
@@ -43,6 +44,11 @@ def parse_file (name_file):
         items = item.split(":")
         dict_[items[0]] = items[1].lstrip()
     return dict_
+#####################################
+
+headers_img = parse_file(BASE_DIR+'/header_img.txt')
+headers_302 = parse_file(BASE_DIR+'/header_302.txt')
+
 #####################################
 def make_str_cookie(cookies):
     str_cook = ''
@@ -70,18 +76,17 @@ def get_lists(image_id):
             #img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
             list_urls_infocards  = []
             for id in item['mapData'].keys():
-                info_url = 'https://obd-memorial.ru/html/info.htm?id='+str(id)
-                list_urls_infocards.append(info_url)
+                list_urls_infocards.append('https://obd-memorial.ru/html/info.htm?id='+str(id))
             list_id_images.append({'id':item['id'],'img':item['img'],'urls_infocards':list_urls_infocards})
     return(list_id_images, cookies)
 
 #def get_images(list_item_images):
 def get_images(item):
     global cookies, zipObj
+    global header_img, headers_302
     #for item in list_item_images:
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(str(item['id']))
     img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
-    headers_302 = parse_file(BASE_DIR+'/header_302.txt')
     headers_302['Cookie'] = make_str_cookie(cookies)
     headers_302['Referer'] = info_url
     req302 = requests.get(img_url,headers=headers_302,cookies=cookies, allow_redirects = False)
@@ -90,7 +95,6 @@ def get_images(item):
         params['id'] = str(item['id'])
         params['id1'] = getStringHash(item['id'])
         params['path'] = item['img']
-        headers_img = parse_file(BASE_DIR+'/header_img.txt')
         headers_img['Referer'] = info_url
         #####################
         req_img = requests.get("https://cdn.obd-memorial.ru/html/images3", headers=headers_img, params=params, cookies=cookies, stream=True, allow_redirects=False )
@@ -99,30 +103,78 @@ def get_images(item):
             name_jpg = str(item['id'])+'.jpg'
             zipObj.writestr(name_jpg, req_img.content)
 
+async def get_images_async(item, cookies, header_img):
+    global headers_302, global_i
+    info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(str(item['id']))
+    img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
+    headers_302 = parse_file(BASE_DIR+'/header_302.txt')
+    headers_302['Cookie'] = make_str_cookie(cookies)
+    headers_302['Referer'] = info_url
+    async with aiohttp.ClientSession() as session:
+        async with session.get(img_url,headers=headers_302,cookies=cookies) as resp:
+            global_i +=1
+            
+            while True:
+                chunk = await resp.content.read(1024)
+                if not chunk:
+                    break
+
+
+            print(global_i,await resp.read(),item['id'])
+            return resp
+            #print(await resp.text())
+
+
+'''
+    req302 = requests.get(img_url,headers=headers_302,cookies=cookies, allow_redirects = False)
+    if(req302.status_code==302):
+        params = {}
+        params['id'] = str(item['id'])
+        params['id1'] = getStringHash(item['id'])
+        params['path'] = item['img']
+        headers_img['Referer'] = info_url
+        #####################
+        req_img = requests.get("https://cdn.obd-memorial.ru/html/images3", headers=headers_img, params=params, cookies=cookies, stream=True, allow_redirects=False )
+        #####################
+        if(req_img.status_code==200):
+            name_jpg = str(item['id'])+'.jpg'
+            zipObj.writestr(name_jpg, req_img.content)
+'''
+
+async def get(url, cookies, headers):
+    headers['Referer'] = 'https://obd-memorial.ru/html/info.htm?id='.format(id)
+    #url = 'https://obd-memorial.ru/html/info.htm?id='.format(id)
+    async with aiohttp.ClientSession(cookies=cookies, headers=headers) as session:
+        async with session.get(url) as resp:
+            return resp
+######################################
 
 
 
 list_images, cookies = get_lists(image_id)
-print('img count = ', list_images)
-print('info count = ',len(list_infocards))
+#print('img count = ', list_images)
+#print('cookies = ',cookies)
+
+loop = asyncio.get_event_loop()
+coroutines = [get_images_async(item, cookies, headers_img) for item in list_images]
+results = loop.run_until_complete(asyncio.gather(*coroutines))
+print(len(results))
+#for res in results:
+#    print(res.status)
+
+
 exit(1)
 #get_images(list_images, cookies)
 #print(list_images)
 ###################################
 
-loop = asyncio.get_event_loop()
 headers_img = parse_file(BASE_DIR+'/header_img.txt')
 headers_img['cookies'] = make_str_cookie(cookies)
 headers_img['Referer'] = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
 
-coroutines = [get(url, cookies, headers_img) for url in url_list]
 
-results = loop.run_until_complete(asyncio.gather(*coroutines))
 
-print(len(results))
 
-for res in results:
-    print(res.status)
 
 
 for file in zipObj.filelist:
