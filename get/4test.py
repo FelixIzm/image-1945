@@ -20,6 +20,10 @@ import asyncio
 
 image_id = 85942988 # 6
 image_id = 70782617 #482
+#image_id = 3878518 #21
+#image_id = 6937337 # 66
+#image_id = 
+#image_id =  
 cookies = {}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -103,7 +107,7 @@ def get_images(item):
             name_jpg = str(item['id'])+'.jpg'
             zipObj.writestr(name_jpg, req_img.content)
 
-async def get_images_async(item, cookies, header_img):
+async def get_images_async(session, item, cookies, header_img):
     global headers_302, global_i
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(str(item['id']))
     img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
@@ -115,40 +119,14 @@ async def get_images_async(item, cookies, header_img):
     headers_302 = parse_file(BASE_DIR+'/header_302.txt')
     headers_302['Cookie'] = make_str_cookie(cookies)
     headers_302['Referer'] = info_url
-    async with aiohttp.ClientSession() as session:
-        async with session.get("https://obd-memorial.ru/html/images3",params=params,headers=headers_302,cookies=cookies) as resp:
-            #while not resp.content.at_eof():
-            #    line = await resp.content.read()
+    #async with aiohttp.ClientSession() as session:
+    async with session.get("https://obd-memorial.ru/html/images3",params=params,headers=headers_302,cookies=cookies) as resp:
+        while not resp.content.at_eof():
+            return await resp.content.read(), item['id']
             
             #print(global_i,item['id'])
-            return await resp.content.read(), item['id']
+            #return line, item['id']
             #print(await resp.text())
-
-
-'''
-    req302 = requests.get(img_url,headers=headers_302,cookies=cookies, allow_redirects = False)
-    if(req302.status_code==302):
-        params = {}
-        params['id'] = str(item['id'])
-        params['id1'] = getStringHash(item['id'])
-        params['path'] = item['img']
-        headers_img['Referer'] = info_url
-        #####################
-        req_img = requests.get("https://cdn.obd-memorial.ru/html/images3", headers=headers_img, params=params, cookies=cookies, stream=True, allow_redirects=False )
-        #####################
-        if(req_img.status_code==200):
-            name_jpg = str(item['id'])+'.jpg'
-            zipObj.writestr(name_jpg, req_img.content)
-'''
-
-async def get(url, cookies, headers):
-    headers['Referer'] = 'https://obd-memorial.ru/html/info.htm?id='.format(id)
-    #url = 'https://obd-memorial.ru/html/info.htm?id='.format(id)
-    async with aiohttp.ClientSession(cookies=cookies, headers=headers) as session:
-        async with session.get(url) as resp:
-            return resp
-######################################
-
 
 
 list_images, cookies = get_lists(image_id)
@@ -158,16 +136,23 @@ in_memory = BytesIO()
 zipObj = ZipFile(in_memory, "a")
 
 loop = asyncio.get_event_loop()
-coroutines = [get_images_async(item, cookies, headers_img) for item in list_images]
+#with aiohttp.ClientSession() as session:
+session = aiohttp.ClientSession()
+coroutines = [get_images_async(session, item, cookies, headers_img) for item in list_images]
 results = loop.run_until_complete(asyncio.gather(*coroutines))
-print(len(results))
-for res in results:
-    #print(res[0])
+loop.close()
+session.close()
+
+for i, res in enumerate(results, start=1):
+    print(i,res[1])
     name_jpg = str(res[1])+'.jpg'
     zipObj.writestr(name_jpg, res[0])
 
-in_memory.seek(0)    
+for file in zipObj.filelist:
+    file.create_system = 0
+zipObj.close()
 
+in_memory.seek(0)    
 with open("my_zip.zip", "wb") as f: # use `wb` mode
     f.write(in_memory.read())
 
