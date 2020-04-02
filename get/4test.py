@@ -107,7 +107,7 @@ def get_images(item):
             name_jpg = str(item['id'])+'.jpg'
             zipObj.writestr(name_jpg, req_img.content)
 
-async def get_images_async(session, item, cookies, header_img):
+async def get_images_async(item, cookies, header_img):
     global headers_302, global_i
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(str(item['id']))
     img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
@@ -119,15 +119,11 @@ async def get_images_async(session, item, cookies, header_img):
     headers_302 = parse_file(BASE_DIR+'/header_302.txt')
     headers_302['Cookie'] = make_str_cookie(cookies)
     headers_302['Referer'] = info_url
-    #async with aiohttp.ClientSession() as session:
-    async with session.get("https://obd-memorial.ru/html/images3",params=params,headers=headers_302,cookies=cookies) as resp:
-        while not resp.content.at_eof():
-            return await resp.content.read(), item['id']
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://obd-memorial.ru/html/images3",params=params,headers=headers_302,cookies=cookies) as resp:
+            while not resp.content.at_eof():
+                return await resp.content.read(), item['id']
             
-            #print(global_i,item['id'])
-            #return line, item['id']
-            #print(await resp.text())
-
 
 list_images, cookies = get_lists(image_id)
 #print('img count = ', list_images)
@@ -135,13 +131,16 @@ list_images, cookies = get_lists(image_id)
 in_memory = BytesIO()
 zipObj = ZipFile(in_memory, "a")
 
+print('1')
 loop = asyncio.get_event_loop()
+print('2')
 #with aiohttp.ClientSession() as session:
-session = aiohttp.ClientSession()
-coroutines = [get_images_async(session, item, cookies, headers_img) for item in list_images]
+print('3')
+coroutines = [get_images_async(item, cookies, headers_img) for item in list_images]
+
 results = loop.run_until_complete(asyncio.gather(*coroutines))
-loop.close()
 session.close()
+loop.close()
 
 for i, res in enumerate(results, start=1):
     print(i,res[1])
