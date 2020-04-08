@@ -1,4 +1,5 @@
 {
-    "python.pythonPath": "venv/bin/python",
-    "python.linting.pylintEnabled": true
+    "python.pythonPath": "/usr/bin/python3.8",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }

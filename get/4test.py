@@ -16,10 +16,11 @@ import csv
 import io
 import aiohttp
 import asyncio
+import async_timeout
 
 
 image_id = 85942988 # 6
-image_id = 70782617 #482
+#image_id = 70782617 #482
 #image_id = 3878518 #21
 #image_id = 6937337 # 66
 #image_id = 
@@ -27,8 +28,6 @@ image_id = 70782617 #482
 cookies = {}
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-#dirpath = tempfile.mkdtemp()
-#print('dirpath = '+dirpath)
 in_memory = BytesIO()
 zipObj = ZipFile(in_memory, "a")
 global_i = 0
@@ -70,12 +69,23 @@ def get_lists(image_id):
     print(res1.status_code)
     if(res1.status_code==307):
         cookies = {}
-        cookies['3fbe47cd30daea60fc16041479413da2']=res1.cookies['3fbe47cd30daea60fc16041479413da2']
-        cookies['JSESSIONID']=res1.cookies['JSESSIONID']
+        try:
+            cookies['3fbe47cd30daea60fc16041479413da2']=res1.cookies['3fbe47cd30daea60fc16041479413da2']
+            cookies['JSESSIONID']=res1.cookies['JSESSIONID']
+        except KeyError:
+            print("KeyError")
+            exit(1)
+
         cookies['showimage']='0'
         img_info = 'https://obd-memorial.ru/html/getimageinfo?id={}'.format(image_id)
+        print(img_info)
         response = requests.get(img_info)
-        response_dict = json.loads(response.text)
+        try:
+            response_dict = json.loads(response.text)
+        except JSONDecodeError:
+            print("JSONDecodeError")
+            exit(1)
+        print(len(response_dict))
         for item in response_dict:
             #img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
             list_urls_infocards  = []
@@ -84,31 +94,9 @@ def get_lists(image_id):
             list_id_images.append({'id':item['id'],'img':item['img'],'urls_infocards':list_urls_infocards})
     return(list_id_images, cookies)
 
-#def get_images(list_item_images):
-def get_images(item):
-    global cookies, zipObj
-    global header_img, headers_302
-    #for item in list_item_images:
-    info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(str(item['id']))
-    img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
-    headers_302['Cookie'] = make_str_cookie(cookies)
-    headers_302['Referer'] = info_url
-    req302 = requests.get(img_url,headers=headers_302,cookies=cookies, allow_redirects = False)
-    if(req302.status_code==302):
-        params = {}
-        params['id'] = str(item['id'])
-        params['id1'] = getStringHash(item['id'])
-        params['path'] = item['img']
-        headers_img['Referer'] = info_url
-        #####################
-        req_img = requests.get("https://cdn.obd-memorial.ru/html/images3", headers=headers_img, params=params, cookies=cookies, stream=True, allow_redirects=False )
-        #####################
-        if(req_img.status_code==200):
-            name_jpg = str(item['id'])+'.jpg'
-            zipObj.writestr(name_jpg, req_img.content)
 
-async def get_images_async(item, cookies, header_img):
-    global headers_302, global_i
+async def get_images_async(session,item, cookies, header_img):
+    global headers_302
     info_url = 'https://obd-memorial.ru/html/info.htm?id={}'.format(str(item['id']))
     img_url="https://obd-memorial.ru/html/images3?id="+str(item['id'])+"&id1="+(getStringHash(item['id']))+"&path="+item['img']
     params = {}
@@ -116,65 +104,43 @@ async def get_images_async(item, cookies, header_img):
     params['id1'] = getStringHash(item['id'])
     params['path'] = item['img']
 
-    headers_302 = parse_file(BASE_DIR+'/header_302.txt')
     headers_302['Cookie'] = make_str_cookie(cookies)
     headers_302['Referer'] = info_url
-    async with aiohttp.ClientSession() as session:
-        async with session.get("https://obd-memorial.ru/html/images3",params=params,headers=headers_302,cookies=cookies) as resp:
-            while not resp.content.at_eof():
-                return await resp.content.read(), item['id']
-            
+    #with aiohttp.ClientSession() as session:
+    async with session.get("https://obd-memorial.ru/html/images3",params=params,headers=headers_302,cookies=cookies, read_until_eof=True) as resp:
+        print(item['id'])
+        assert resp.status == 200
+        return await resp.content.readany(), item['id']
 
-list_images, cookies = get_lists(image_id)
-#print('img count = ', list_images)
-#print('cookies = ',cookies)
-in_memory = BytesIO()
-zipObj = ZipFile(in_memory, "a")
+async def main():            
+    list_images, cookies = get_lists(image_id)
+    #in_memory = BytesIO()
+    #zipObj = ZipFile(in_memory, "a")
 
-print('1')
-loop = asyncio.get_event_loop()
-print('2')
-#with aiohttp.ClientSession() as session:
-print('3')
-coroutines = [get_images_async(item, cookies, headers_img) for item in list_images]
+    print('1')
+    loop = asyncio.get_running_loop()
+    print('2')
+    async with aiohttp.ClientSession(loop=loop) as session:
+        print('3')
+        coroutines = [get_images_async(session,item, cookies, headers_img) for item in list_images]
+        #results = loop.run_until_complete(asyncio.gather(*coroutines))
+        #return results
+        return await asyncio.gather(*coroutines)
 
-results = loop.run_until_complete(asyncio.gather(*coroutines))
-session.close()
-loop.close()
-
-for i, res in enumerate(results, start=1):
-    print(i,res[1])
-    name_jpg = str(res[1])+'.jpg'
-    zipObj.writestr(name_jpg, res[0])
+r = asyncio.run(main())
+print('===================')
+for item in r:
+    name_jpg = str(item[1])+'.jpg'
+    zipObj.writestr(name_jpg, item[0])
+    print(item[1])
 
 for file in zipObj.filelist:
     file.create_system = 0
 zipObj.close()
-
 in_memory.seek(0)    
-with open("my_zip.zip", "wb") as f: # use `wb` mode
+
+with open('1.zip', 'wb') as f:
     f.write(in_memory.read())
 
 exit(1)
-#get_images(list_images, cookies)
-#print(list_images)
-###################################
 
-headers_img = parse_file(BASE_DIR+'/header_img.txt')
-headers_img['cookies'] = make_str_cookie(cookies)
-headers_img['Referer'] = 'https://obd-memorial.ru/html/info.htm?id={}'.format(image_id)
-
-
-
-
-
-
-for file in zipObj.filelist:
-    file.create_system = 0
-
-zipObj.close()
-in_memory.seek(0)    
-print(zipObj.filelist)
-
-with open('test.zip', 'wb') as f:
-    f.write(in_memory.read())
