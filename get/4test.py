@@ -107,10 +107,29 @@ async def get_images_async(session,item, cookies, header_img):
     headers_302['Cookie'] = make_str_cookie(cookies)
     headers_302['Referer'] = info_url
     #with aiohttp.ClientSession() as session:
+    data = bytearray()
+    buffer = b""
     async with session.get("https://obd-memorial.ru/html/images3",params=params,headers=headers_302,cookies=cookies, read_until_eof=True) as resp:
-        print(item['id'])
-        assert resp.status == 200
-        return await resp.content.readany(), item['id']
+        #print(item['id'])
+        #assert resp.status == 200
+        #return await resp.content.readany(), item['id']
+        '''
+        async for data, end_of_http_chunk in resp.content.iter_chunks():
+            buffer += data
+            print(item['id'], len(data))
+            if end_of_http_chunk:
+                print(len(buffer))
+                return buffer, item['id']
+'''
+
+        while True:
+            chunk = await resp.content.read()
+            if not chunk:
+                break
+            data += chunk
+    return data, item['id']
+
+    
 
 async def main():            
     list_images, cookies = get_lists(image_id)
@@ -124,7 +143,6 @@ async def main():
         print('3')
         coroutines = [get_images_async(session,item, cookies, headers_img) for item in list_images]
         #results = loop.run_until_complete(asyncio.gather(*coroutines))
-        #return results
         return await asyncio.gather(*coroutines)
 
 r = asyncio.run(main())
@@ -132,7 +150,7 @@ print('===================')
 for item in r:
     name_jpg = str(item[1])+'.jpg'
     zipObj.writestr(name_jpg, item[0])
-    print(item[1])
+    print(len(item[0]),item[1])
 
 for file in zipObj.filelist:
     file.create_system = 0
